@@ -1,0 +1,121 @@
+html,
+body,
+#root {
+    margin: 0;
+}
+
+.App {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: clip;
+}
+
+:where(.css-dev-only-do-not-override-1htoz2s).ant-card {
+    box-shadow: 0 20px 27px rgb(0 0 0/5%)
+}
+
+:where(.css-dev-only-do-not-override-1htoz2s).ant-card .ant-card-body {
+    padding: 16px;
+}
+
+:where(.css-dev-only-do-not-override-1htoz2s).ant-menu .ant-menu-item-group .ant-menu-item-group-list .ant-menu-item {
+    padding: 24px;
+}
+
+:where(.css-dev-only-do-not-override-1htoz2s).ant-menu .ant-menu-item-group .ant-menu-item-group-list .ant-menu-item-selected {
+    padding: 24px;
+    background: #fff;
+    color: #141414;
+    box-shadow: 0 20px 27px rgb(0 0 0/5%);
+}
+
+:where(.css-dev-only-do-not-override-1htoz2s).ant-menu .ant-menu-item-group .ant-menu-item-group-list .ant-menu-submenu .ant-menu-sub {
+    background: transparent;
+}
+
+:where(.css-dev-only-do-not-override-1htoz2s).ant-layout-sider-light .ant-layout-sider-zero-width-trigger{
+    position: absolute;
+}
+
+
+
+.demo-logo-vertical {
+    height: auto;
+    border-radius: 6px;
+
+    img {
+        max-width: 100%;
+        max-height: 100%;
+        display: block;
+    }
+}
+
+h1 {
+}
+
+h2 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+h3 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+h4 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+h5 {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+@media (max-width: 992px) {
+
+    h1:where(.css-dev-only-do-not-override-142vneq).ant-typography {
+        font-size: 28px;
+    }
+
+
+}
+
+@media (max-width: 768px) {
+
+    h1:where(.css-dev-only-do-not-override-142vneq).ant-typography {
+        font-size: 20px;
+    }
+
+
+}
+
+/* Target the entire scrollbar */
+::-webkit-scrollbar {
+    width: 5px;
+    /* Width of the scrollbar */
+}
+
+/* Track of the scrollbar */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    /* Color of the track */
+    border-radius: 10px;
+    /* Round the edges */
+}
+
+/* Scrollbar handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+    /* Color of the scrollbar handle */
+    border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Darker on hover */
+}
