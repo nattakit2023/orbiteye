@@ -15,6 +15,9 @@ body,
     background-color: #000000 !important;
     box-shadow: rgba(0, 0, 0, 0.05) 0px 20px 27px;
   }
+  :where(.css-dev-only-do-not-override-xbngoj).ant-tabs .ant-tabs-tab-btn{
+      color: rgba(255,255,255,0.5);
+  }
 }
 
 .demo-logo-vertical {
@@ -22,7 +25,7 @@ body,
   border-radius: 6px;
 
   img {
-    max-width: 100%;
+    max-width: 50%;
     max-height: 100%;
     display: block;
   }
@@ -54,4 +57,14 @@ h5 {
 
 @media (max-width: "992px") {
 
+}
+
+input::placeholder {
+  color: #999;
+  transition: all 0.3s ease;
+}
+
+input:focus::placeholder {
+  color: transparent;
+  transform: translateY(-10px);
 }

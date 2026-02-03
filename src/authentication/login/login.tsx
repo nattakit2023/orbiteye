@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../authentication.css";
 import {
@@ -10,8 +10,14 @@ import {
   Typography,
   Button,
   Divider,
+  Card,
+  Avatar,
 } from "antd";
-import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
+import {
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  LeftOutlined,
+} from "@ant-design/icons";
 
 const { Text } = Typography;
 
@@ -23,14 +29,14 @@ interface LoginType {
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [login, setLogin] = useState<Partial<LoginType>>({
-    username: "",
+    email: "",
     password: "",
   });
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log(login);
-    if (login.username === "admin" && login.password === "admin") {
+    if (login.email === "admin@admin.com" && login.password === "admin") {
       localStorage.setItem("token", "Secret001");
       navigate("/dashboard");
     }
@@ -57,23 +63,38 @@ const Login: React.FC = () => {
               align="center"
               vertical
             >
-              <div
+              <Card
                 style={{
-                  width:"400px",
+                  width: "500px",
                   backgroundColor: "#1c273b",
                   border: "0.5px solid #333333",
                   borderRadius: "10px",
                   backdropFilter: "blur(10px)",
-                  padding: "20px 30px",
+                  padding: "0px 20px 30px 20px",
                 }}
               >
                 <div className="text">
-                  <Flex align="center" vertical>
-                    <Image
-                      src="../../../public/assets/logo/orbiteye_white.png"
-                      width={150}
-                    ></Image>
-                  </Flex>
+                  <Row align="middle">
+                    <Col span={2}>
+                      <Row justify="start">
+                        <Button
+                          type="primary"
+                          shape="circle"
+                          icon={<LeftOutlined />}
+                          style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
+                        />
+                      </Row>
+                    </Col>
+                    <Col span={20}>
+                      <Row justify="center">
+                        <Image
+                          src="../../../public/assets/logo/orbiteye_white.png"
+                          width={"50%"}
+                          preview={false}
+                        />
+                      </Row>
+                    </Col>
+                  </Row>
                 </div>
                 <div className="text">
                   <Flex align="center" vertical>
@@ -170,12 +191,47 @@ const Login: React.FC = () => {
                 </div>
                 <div className="text">
                   <Flex justify="end">
-                    <Button type="primary" onClick={(e) => handleFormSubmit(e)}>
+                    <Button
+                      type="primary"
+                      onClick={(e) => handleFormSubmit(e)}
+                      style={{ padding: "20px" }}
+                    >
                       Login
                     </Button>
                   </Flex>
                 </div>
-                <Divider size="large" />
+                <Divider
+                  size="large"
+                  style={{
+                    borderColor: "#FFFFFF",
+                    color: "white",
+                    fontSize: "12px",
+                  }}
+                >
+                  {" "}
+                  or{" "}
+                </Divider>
+                <div className="text">
+                  <Flex justify="end">
+                    <Button
+                      type="default"
+                      onClick={() => ""}
+                      style={{ padding: "20px" }}
+                      // icon={
+                      //   <Avatar
+                      //     src="../../../public/assets/logo/google.png"
+                      //     size="small"
+                      //   />
+                      // }
+                    >
+                      <Avatar
+                        src="../../../public/assets/logo/google.png"
+                        size={18}
+                      />
+                      Google
+                    </Button>
+                  </Flex>
+                </div>
                 <div className="text">
                   <Flex justify="center">
                     <Text
@@ -198,7 +254,7 @@ const Login: React.FC = () => {
                     </Text>
                   </Flex>
                 </div>
-              </div>
+              </Card>
             </Flex>
           </Col>
         </Row>
