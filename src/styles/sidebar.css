@@ -1,0 +1,89 @@
+/* Sidebar Input Placeholder Styling */
+
+/* Sidebar Collapse/Expand Animation */
+.ant-layout-sider {
+    transition: width 0.5s ease-in-out, min-width 0.5s ease-in-out, flex 0.5s ease-in-out !important;
+    overflow: hidden !important;
+}
+
+.ant-layout-sider-children {
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out !important;
+    overflow: hidden !important;
+}
+
+/* Smooth transition for sidebar content */
+.ant-layout-sider > div {
+    transition: padding 0.5s ease-in-out, opacity 0.5s ease-in-out !important;
+}
+
+/* When sidebar is collapsed, hide content smoothly */
+.ant-layout-sider-collapsed .ant-layout-sider-children {
+    opacity: 0;
+}
+
+/* When sidebar is expanded, show content smoothly */
+.ant-layout-sider:not(.ant-layout-sider-collapsed) .ant-layout-sider-children {
+    opacity: 1;
+}
+
+/* Persistent Toggle Button Styles */
+.ant-btn-fixed-toggle {
+    position: fixed !important;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1001;
+    background-color: #293653 !important;
+    border-radius: 0 8px 8px 0 !important;
+    padding: 12px 8px !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3) !important;
+    transition:
+        left 0.5s ease-in-out,
+        background-color 0.2s,
+        border-radius 0.3s !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: auto !important;
+    height: auto !important;
+}
+
+/* Toggle button when sidebar is expanded */
+.ant-btn-fixed-toggle.sidebar-expanded {
+    left: 300px !important;
+    border-radius: 8px 0 0 8px !important;
+}
+
+/* Toggle button hover effect */
+.ant-btn-fixed-toggle:hover {
+    background-color: #3a4a6c !important;
+}
+
+/* Inner Layout - Use row-reverse to position right sidebar on the right */
+.inner-layout {
+    flex-direction: row-reverse !important;
+}
+
+/* Ensure smooth transition for width when collapsing - already handled above */
+
+.ant-input::placeholder {
+    color: #a0a0a0 !important;
+    opacity: 1;
+}
+
+.ant-input:-ms-input-placeholder {
+    color: #a0a0a0 !important;
+}
+
+.ant-input::-ms-input-placeholder {
+    color: #a0a0a0 !important;
+}
+
+.ant-input::-webkit-input-placeholder {
+    color: #a0a0a0 !important;
+}
+
+.ant-input::-moz-placeholder {
+    color: #a0a0a0 !important;
+    opacity: 1;
+}

@@ -10,13 +10,14 @@ interface RequireAuthProps {
 const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const getItem = localStorage.getItem("token");
-  
+
   useEffect(() => {
     if (getItem == undefined) {
       navigate("/authentication/explore");
     }
+    navigate("/dashboard");
   }, [getItem, navigate, location.pathname]);
 
   return getItem == undefined ? <Spin /> : children;

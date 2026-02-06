@@ -1,23 +1,24 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../authentication.css";
-import {
-  Image,
-  Row,
-  Col,
-  Flex,
-  Input,
-  Typography,
-  Button,
-  Divider,
-  Card,
-  Avatar,
-} from "antd";
+import Image from "antd/es/image";
+import Row from "antd/es/row";
+import Col from "antd/es/col";
+import Flex from "antd/es/flex";
+import Input from "antd/es/input";
+import Typography from "antd/es/typography";
+import Button from "antd/es/button";
+import Divider from "antd/es/divider";
+import Card from "antd/es/card";
+import Avatar from "antd/es/avatar";
 import {
   EyeInvisibleOutlined,
   EyeTwoTone,
   LeftOutlined,
 } from "@ant-design/icons";
+import logo from "@/public/assets/logo/orbiteye_white.png";
+import logo_google from "@/public/assets/logo/google.png";
+import background from "@/public/assets/image/Login_Background.png";
+import "@/authentication/authentication.css";
 
 const { Text } = Typography;
 
@@ -47,7 +48,7 @@ const Login: React.FC = () => {
       <div className="background_image">
         {/*<div id="grad1"></div>*/}
         <Image
-          src="../../../public/assets/image/Login_Background.png"
+          src={background}
           alt="Background"
           width="100%"
           height="100%"
@@ -87,11 +88,7 @@ const Login: React.FC = () => {
                     </Col>
                     <Col span={20}>
                       <Row justify="center">
-                        <Image
-                          src="../../../public/assets/logo/orbiteye_white.png"
-                          width={"50%"}
-                          preview={false}
-                        />
+                        <Image src={logo} width={"50%"} preview={false} />
                       </Row>
                     </Col>
                   </Row>
@@ -224,10 +221,7 @@ const Login: React.FC = () => {
                       //   />
                       // }
                     >
-                      <Avatar
-                        src="../../../public/assets/logo/google.png"
-                        size={18}
-                      />
+                      <Avatar src={logo_google} size={18} />
                       Google
                     </Button>
                   </Flex>

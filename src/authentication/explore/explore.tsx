@@ -1,7 +1,10 @@
 import type React from "react";
 import { useNavigate } from "react-router-dom";
 import "../authentication.css";
-import { Image, Button, Typography, Flex } from "antd";
+import Image from 'antd/es/image';
+import Button from 'antd/es/button';
+import Typography from 'antd/es/typography';
+import Flex from 'antd/es/flex';
 import { SendOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;

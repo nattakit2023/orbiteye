@@ -1,25 +1,55 @@
 import React from "react";
-import { Layout } from "antd";
+import { Layout, Button } from "antd";
 import { Outlet } from "react-router-dom";
+import { MenuOutlined } from "@ant-design/icons";
 
 const { Content } = Layout;
 
 interface ContentsProps {
   data: string;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  rightSidebarCollapsed: boolean;
+  setRightSidebarCollapsed: (collapsed: boolean) => void;
 }
 
 const Contents: React.FC<ContentsProps> = (props) => {
 
   return (
     <>
+      {/* Open Toggle Button - Shows in Dashboard when sidebar is closed */}
+      {props.sidebarCollapsed && (
+        <Button
+          type="text"
+          icon={<MenuOutlined style={{ color: "white", fontSize: "14px" }} />}
+          onClick={() => props.setSidebarCollapsed(false)}
+          style={{
+            position: "absolute",
+            left: "20px",
+            top: "20px",
+            zIndex: 1000,
+            backgroundColor: "#293653",
+            borderRadius: "50%",
+            padding: "12px 8px",
+            boxShadow: "2px 0 8px rgba(0,0,0,0.3)",
+            transition: "background-color 0.2s",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.backgroundColor = "#3a4a6c";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.backgroundColor = "#293653";
+          }}
+          title="Open Sidebar"
+        />
+      )}
+
       {/* Theme 1 */}
-      <Content
-        style={{
-          margin: "16px 24px",
-          padding: "16px 24px",
-        }}
-      >
-        <Outlet context={props.data} />
+      <Content style={{ position: "relative" }}>
+        <Outlet context={{ rightSidebarCollapsed: props.rightSidebarCollapsed, setRightSidebarCollapsed: props.setRightSidebarCollapsed }} />
       </Content>
 
       {/* Theme 2 */}
