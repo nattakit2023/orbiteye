@@ -15,6 +15,9 @@ import {
 } from "../components/ui/tabs-carousel";
 import DrawArea from "@/layouts/Sidebar/DrawArea";
 import Resolution from "@/layouts/Sidebar/Resolution";
+import DateSelection from "@/layouts/Sidebar/DateSelection/DateSelection";
+import Satellite from "@/layouts/Sidebar/Satellite/Satellite";
+import CloudQuality from "@/layouts/Sidebar/CloudQuality/CloudQuality";
 import "@/styles/sidebar.css";
 import image_logo from "@/public/assets/logo/orbiteye_white.png";
 import type { ApiRequest } from "@/types/api";
@@ -36,6 +39,13 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [sidenavType] = useState("transparent");
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedSatellites, setSelectedSatellites] = useState<string[]>([]);
+  const [selectedCloudQualities, setSelectedCloudQualities] = useState<
+    string[]
+  >([]);
+  const [selectedDates, setSelectedDates] = useState<[string, string] | null>(
+    null,
+  );
   const [currentShape, setCurrentShape] = useState<{
     type: "circle" | "polygon" | "rectangle" | null;
     coordinates: Array<[number, number]>;
@@ -65,8 +75,136 @@ const Sidebar: React.FC<SidebarProps> = ({
   }, []);
 
   const handleShowResult = () => {
-    console.log("Show Result clicked", selectedItems);
+    // For polygons, add the first coordinate to the end to close the polygon
+    if (
+      currentShape?.type === "polygon" ||
+      currentShape?.type === "rectangle"
+    ) {
+      const firstCoordinate = currentShape.coordinates[0];
+      currentShape.coordinates.push(firstCoordinate);
+    }
+    console.log("Show Result clicked", {
+      resolutions: selectedItems,
+      satellites: selectedSatellites,
+      cloudQualities: selectedCloudQualities,
+      dates: selectedDates,
+    });
     console.log("Current shape:", currentShape);
+
+    // Build filter args based on selections
+    // const filterArgs: Array<
+    //   FilterOperation | PropertyReference | number | string
+    // > = [];
+
+    // Add cloud quality filter based on selection
+    // if (selectedCloudQualities.length > 0) {
+    //   const cloudQualityFilters: Array<
+    //     FilterOperation | PropertyReference | number | string
+    //   > = [];
+
+    //   // "1" (Clear): 0-10% -> cloudNotation <= 10
+    //   if (selectedCloudQualities.includes("1")) {
+    //     cloudQualityFilters.push({
+    //       op: "<=",
+    //       args: [
+    //         {
+    //           property: "cloudNotation",
+    //         },
+    //         10,
+    //       ],
+    //     } as const);
+    //   }
+
+    //   // "2" (Low): 10-30% -> cloudNotation > 10 && cloudNotation <= 30
+    //   if (selectedCloudQualities.includes("2")) {
+    //     cloudQualityFilters.push({
+    //       op: "and",
+    //       args: [
+    //         {
+    //           op: ">",
+    //           args: [
+    //             {
+    //               property: "cloudNotation",
+    //             },
+    //             10,
+    //           ],
+    //         } as const,
+    //         {
+    //           op: "<=",
+    //           args: [
+    //             {
+    //               property: "cloudNotation",
+    //             },
+    //             30,
+    //           ],
+    //         } as const,
+    //       ],
+    //     } as const);
+    //   }
+
+    //   // "3" (Medium): 30-50% -> cloudNotation > 30 && cloudNotation <= 50
+    //   if (selectedCloudQualities.includes("3")) {
+    //     cloudQualityFilters.push({
+    //       op: "and",
+    //       args: [
+    //         {
+    //           op: ">",
+    //           args: [
+    //             {
+    //               property: "cloudNotation",
+    //             },
+    //             30,
+    //           ],
+    //         } as const,
+    //         {
+    //           op: "<=",
+    //           args: [
+    //             {
+    //               property: "cloudNotation",
+    //             },
+    //             50,
+    //           ],
+    //         } as const,
+    //       ],
+    //     } as const);
+    //   }
+
+    //   // "4" (High): 50%+ -> cloudNotation > 50
+    //   if (selectedCloudQualities.includes("4")) {
+    //     cloudQualityFilters.push({
+    //       op: ">",
+    //       args: [
+    //         {
+    //           property: "cloudNotation",
+    //         },
+    //         50,
+    //       ],
+    //     } as const);
+    //   }
+
+    //   // If multiple cloud quality selections, combine with OR
+    //   if (cloudQualityFilters.length > 0) {
+    //     const cloudFilter =
+    //       cloudQualityFilters.length === 1
+    //         ? cloudQualityFilters[0]
+    //         : ({
+    //             op: "or",
+    //             args: cloudQualityFilters,
+    //           } as const);
+    //     filterArgs.push(cloudFilter);
+    //   }
+    // }
+
+    // Add global incidence filter (always include)
+    // filterArgs.push({
+    //   op: "<",
+    //   args: [
+    //     {
+    //       property: "globalIncidence",
+    //     },
+    //     50,
+    //   ],
+    // } as const);
 
     // Prepare API request data with correct structure
     const requestData: ApiRequest = {
@@ -82,10 +220,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                   radius: currentShape.radius,
                 }
               : {
-                  coordinates: [currentShape.coordinates.map(([lat, lng]) => [
-                    parseFloat(lng.toFixed(14) + "1"),
-                    parseFloat(lat.toFixed(14) + "1"),
-                  ])],
+                  coordinates: [
+                    currentShape.coordinates.map(([lat, lng]) => [lng, lat]),
+                  ],
                   // 16.193575,98.767090 | 16.066929,101.623535 | 14.881087,101.744385 | 14.796128,98.250732 | 16.204125,98.767090
                   // coordinates: [
                   //   [
@@ -102,7 +239,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             type: "Polygon",
             coordinates: [],
           },
-      datetime: "../" + new Date().toISOString(),
+      datetime: selectedDates
+        ? `${selectedDates[0]}T00:00:00.000Z/${selectedDates[1]}T23:59:59.999Z`
+        : "../" + new Date().toISOString(),
       filter: {
         op: "and",
         args: [
@@ -128,7 +267,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       },
       sortby: "-id",
       offset: 0,
-      limit: 100,
+      limit: 10,
     };
 
     console.log("API Request Data:", requestData);
@@ -150,6 +289,27 @@ const Sidebar: React.FC<SidebarProps> = ({
         ? prev.filter((id: string) => id !== itemId)
         : [...prev, itemId],
     );
+  };
+
+  const handleSelectSatellite = (itemId: string) => {
+    setSelectedSatellites((prev: string[]) =>
+      prev.includes(itemId)
+        ? prev.filter((id: string) => id !== itemId)
+        : [...prev, itemId],
+    );
+  };
+
+  const handleSelectCloudQuality = (itemId: string) => {
+    setSelectedCloudQualities((prev: string[]) =>
+      prev.includes(itemId)
+        ? prev.filter((id: string) => id !== itemId)
+        : [...prev, itemId],
+    );
+  };
+
+  const handleDateChange = (dates: unknown, dateStrings: [string, string]) => {
+    console.log("Date range selected:", dateStrings);
+    setSelectedDates(dateStrings);
   };
 
   return (
@@ -248,7 +408,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <TabsList className="w-full">
                     <TabsTrigger value="drawarea">Draw Area</TabsTrigger>
                     <TabsTrigger value="resolution">Resolution</TabsTrigger>
-                    <TabsTrigger value="resolutions">Resolutions</TabsTrigger>
+                    <TabsTrigger value="date">Select Date</TabsTrigger>
+                    <TabsTrigger value="satellite">Satellite</TabsTrigger>
+                    <TabsTrigger value="condition">Condition</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="drawarea" className="mt-6">
@@ -261,10 +423,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                       selectedItems={selectedItems}
                     />
                   </TabsContent>
-                  <TabsContent value="resolutions" className="mt-6">
-                    <Resolution
-                      onSelectItem={handleSelectItem}
-                      selectedItems={selectedItems}
+
+                  <TabsContent value="date" className="mt-6">
+                    <DateSelection onDateChange={handleDateChange} />
+                  </TabsContent>
+
+                  <TabsContent value="satellite" className="mt-6">
+                    <Satellite
+                      onSelectItem={handleSelectSatellite}
+                      selectedItems={selectedSatellites}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="condition" className="mt-6">
+                    <CloudQuality
+                      onSelectItem={handleSelectCloudQuality}
+                      selectedItems={selectedCloudQualities}
                     />
                   </TabsContent>
                 </Tabs>
@@ -276,17 +450,39 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div style={{ flex: "0 0 auto", marginTop: "16px" }}>
             <Button
               type="primary"
-              disabled={selectedItems.length === 0}
+              disabled={
+                selectedItems.length === 0 &&
+                selectedSatellites.length === 0 &&
+                selectedCloudQualities.length === 0 &&
+                !selectedDates
+              }
               style={{
                 width: "100%",
                 backgroundColor:
-                  selectedItems.length === 0 ? "#505050" : "#293653",
+                  selectedItems.length === 0 &&
+                  selectedSatellites.length === 0 &&
+                  selectedCloudQualities.length === 0 &&
+                  !selectedDates
+                    ? "#505050"
+                    : "#293653",
                 border: "none",
                 height: "40px",
                 fontSize: "16px",
                 fontWeight: "600",
-                color: selectedItems.length === 0 ? "#808080" : "#FFFFFF",
-                cursor: selectedItems.length === 0 ? "not-allowed" : "pointer",
+                color:
+                  selectedItems.length === 0 &&
+                  selectedSatellites.length === 0 &&
+                  selectedCloudQualities.length === 0 &&
+                  !selectedDates
+                    ? "#808080"
+                    : "#FFFFFF",
+                cursor:
+                  selectedItems.length === 0 &&
+                  selectedSatellites.length === 0 &&
+                  selectedCloudQualities.length === 0 &&
+                  !selectedDates
+                    ? "not-allowed"
+                    : "pointer",
               }}
               onClick={handleShowResult}
             >

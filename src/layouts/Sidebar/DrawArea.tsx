@@ -1,17 +1,12 @@
 import React, { useState, useCallback, useEffect } from "react";
 import Button from "antd/es/button";
-import Empty from "antd/es/empty";
-import Typography from "antd/es/typography";
 import Tooltip from "antd/es/tooltip";
-import Card from "antd/es/card";
 import {
   RadiusBottomleftOutlined,
   BorderOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
 import { Circle } from "lucide-react";
-
-const { Text } = Typography;
 
 // ==================== Constants ====================
 
@@ -74,11 +69,11 @@ const SHAPE_BUTTONS: ShapeButtonConfig[] = [
   },
 ];
 
-const SHAPE_TYPE_LABELS: Record<ShapeType, string> = {
-  [SHAPE_TYPES.CIRCLE]: "Circle",
-  [SHAPE_TYPES.POLYGON]: "Polygon",
-  [SHAPE_TYPES.RECTANGLE]: "Rectangle",
-};
+// const SHAPE_TYPE_LABELS: Record<ShapeType, string> = {
+//   [SHAPE_TYPES.CIRCLE]: "Circle",
+//   [SHAPE_TYPES.POLYGON]: "Polygon",
+//   [SHAPE_TYPES.RECTANGLE]: "Rectangle",
+// };
 
 // ==================== Helper Functions ====================
 
@@ -119,7 +114,8 @@ const DrawArea: React.FC = () => {
     console.log("DrawArea: Dispatching clearDrawings event");
     window.dispatchEvent(new CustomEvent("clearDrawings"));
     console.log("DrawArea: clearDrawings event dispatched");
-  }, []);
+    console.log(currentShape);
+  }, [currentShape]);
 
   const handleShapeComplete = useCallback((event: Event) => {
     const customEvent = event as CustomEvent<ShapeCompletedEventDetail>;
@@ -153,10 +149,11 @@ const DrawArea: React.FC = () => {
       <div
         style={{
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
           marginBottom: `${BUTTON_GAP}px`,
         }}
       >
+        <div>Draw area of interest (AOI)</div>
         <Tooltip title="Clear All Drawings">
           <div
             onClick={handleClear}
@@ -206,7 +203,7 @@ const DrawArea: React.FC = () => {
       </div>
 
       {/* Current Shape Info */}
-      {currentShape ? (
+      {/*{currentShape ? (
         <Card
           size="small"
           title={<Text strong>{SHAPE_TYPE_LABELS[currentShape.type]}</Text>}
@@ -229,7 +226,7 @@ const DrawArea: React.FC = () => {
           }
           style={{ padding: "20px 0" }}
         />
-      )}
+      )}*/}
     </div>
   );
 };

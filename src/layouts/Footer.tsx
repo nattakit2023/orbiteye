@@ -3,7 +3,7 @@ import { Layout } from "antd";
 
 const { Footer } = Layout;
 
-const Footers = () => {
+const Footers: React.FC = () => {
   return (
     <>
       <Footer

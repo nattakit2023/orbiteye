@@ -1,10 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  useMap,
-  ZoomControl,
-} from "react-leaflet";
+import { MapContainer, TileLayer, useMap, ZoomControl } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Card from "antd/es/card";
@@ -22,7 +17,183 @@ L.Icon.Default.mergeOptions({
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
+// Feature Layer Component - Renders API response features on map
+interface FeatureLayerProps {
+  results: any[];
+  hoveredResult: any | null;
+  clickedResult: any | null;
+}
 
+function FeatureLayer({
+  results,
+  hoveredResult,
+  clickedResult,
+}: FeatureLayerProps) {
+  const map = useMap();
+  const featureLayersRef = useRef<(L.Polygon | L.CircleMarker)[]>([]);
+
+  // Render features on map
+  useEffect(() => {
+    // Clear existing feature layers
+    featureLayersRef.current.forEach((layer) => {
+      map.removeLayer(layer);
+    });
+    featureLayersRef.current = [];
+
+    // Determine which result(s) to render - only show when hovered or clicked
+    const activeResult = clickedResult || hoveredResult;
+    let resultsToRender = [] as any[];
+
+    if (activeResult) {
+      // Show only the hovered/clicked feature
+      resultsToRender = [activeResult];
+    } else {
+      // Hide all features when nothing is active
+      resultsToRender = [];
+    }
+
+    // Render selected results
+    resultsToRender.forEach((result) => {
+      if (!result.coordinates) return;
+
+      // Hover takes precedence over click
+      const isHovered = hoveredResult?.id === result.id;
+      const isClicked = clickedResult?.id === result.id && !isHovered;
+
+      // Check if coordinates is an array (polygon/linestring) or single point
+      const isCoordinateArray = Array.isArray(result.coordinates[0]);
+
+      if (isCoordinateArray) {
+        // Polygon/LineString - render as polygon
+        const polygon = L.polygon(result.coordinates as [number, number][], {
+          fillColor: isHovered
+            ? "rgba(255, 77, 79, 0.3)"
+            : "rgba(24, 144, 255, 0.2)",
+          color: isHovered ? "#ff4d4f" : "#1890ff",
+          weight: isHovered ? 3 : 2,
+          opacity: 1,
+          fillOpacity: isHovered ? 0.4 : 0.2,
+        }).addTo(map);
+
+        featureLayersRef.current.push(polygon);
+      } else {
+        // Single point - render as circle marker
+        const [lat, lng] = result.coordinates as [number, number];
+        const marker = L.circleMarker([lat, lng], {
+          radius: 8,
+          color: isHovered ? "#ff4d4f" : isClicked ? "#cc0000" : "#0050b3",
+          weight: isHovered ? 3 : 2,
+          opacity: 1,
+          fillOpacity: isHovered ? 0.6 : 0.4,
+        }).addTo(map);
+
+        featureLayersRef.current.push(marker);
+      }
+    });
+
+    return () => {
+      // Cleanup on unmount or when result changes
+      featureLayersRef.current.forEach((layer) => {
+        map.removeLayer(layer);
+      });
+      featureLayersRef.current = [];
+    };
+  }, [results, hoveredResult, clickedResult, map]);
+
+  return null; // This component renders to map directly
+}
+
+// Feature Coordinates Display Component - Shows coordinates in bottom-center popup
+interface FeatureCoordinatesDisplayProps {
+  hoveredResult: any | null;
+  clickedResult: any | null;
+}
+
+function FeatureCoordinatesDisplay({
+  hoveredResult,
+  clickedResult,
+}: FeatureCoordinatesDisplayProps) {
+  const activeResult = clickedResult || hoveredResult;
+
+  if (
+    !activeResult ||
+    !activeResult.coordinates ||
+    activeResult.coordinates.length === 0
+  ) {
+    return null;
+  }
+
+  // Check if coordinates is an array (polygon) or single point
+  const isCoordinateArray = Array.isArray(activeResult.coordinates[0]);
+
+  // Format coordinates like drawn shapes
+  let coordsStr = "";
+  if (isCoordinateArray) {
+    coordsStr = (activeResult.coordinates as [number, number][])
+      .map(
+        (coord: [number, number]) =>
+          `${coord[0].toFixed(6)},${coord[1].toFixed(6)}`,
+      )
+      .join(" | ");
+  } else {
+    // Single point
+    const [lat, lng] = activeResult.coordinates as [number, number];
+    coordsStr = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+  }
+
+  const displayCoords =
+    coordsStr.length > 40 ? coordsStr.substring(0, 40) + "..." : coordsStr;
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        bottom: "20px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 1000,
+        backgroundColor: "rgba(255, 77, 79, 0.95)",
+        backdropFilter: "blur(10px)",
+        border: "1px solid #ff4d4f",
+        borderRadius: "8px",
+        boxShadow: "0 4px 12px rgba(255, 77, 79, 0.3)",
+        padding: "12px 16px",
+        display: "flex",
+        gap: "12px",
+        alignItems: "center",
+        flexWrap: "wrap",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "12px",
+          color: "#ffffff",
+          fontWeight: 600,
+          marginBottom: "4px",
+        }}
+      >
+        {activeResult.name}
+      </div>
+      <div
+        style={{
+          padding: "8px 12px",
+          backgroundColor: "rgba(13, 20, 25, 0.8)",
+          borderRadius: "4px",
+          fontSize: "11px",
+          color: "#ff4d4f",
+          border: "2px solid #ff4d4f",
+          maxWidth: "300px",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          fontFamily: "monospace",
+        }}
+      >
+        {displayCoords}
+      </div>
+    </div>
+  );
+}
 
 // Drawing Handler Component
 interface DrawingHandlerProps {
@@ -33,7 +204,9 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
   const map = useMap();
   const isDrawingRef = useRef(false);
   const pointsRef = useRef<[number, number][]>([]);
-  const shapeRef = useRef<L.Circle | L.Polygon | L.Rectangle | L.CircleMarker | null>(null);
+  const shapeRef = useRef<
+    L.Circle | L.Polygon | L.Rectangle | L.CircleMarker | null
+  >(null);
   const tempPolylineRef = useRef<L.Polyline | null>(null);
   const shapeCompletedRef = useRef(false); // Track if shape was completed
   const vertexMarkersRef = useRef<L.CircleMarker[]>([]); // Track polygon vertex markers
@@ -228,8 +401,12 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
         // Check if clicking near the first point to close the polygon
         if (pointsRef.current.length >= 3) {
           const firstPoint = pointsRef.current[0];
-          const firstPointPixel = map.latLngToContainerPoint(L.latLng(firstPoint[0], firstPoint[1]));
-          const clickPointPixel = map.latLngToContainerPoint(L.latLng(point[0], point[1]));
+          const firstPointPixel = map.latLngToContainerPoint(
+            L.latLng(firstPoint[0], firstPoint[1]),
+          );
+          const clickPointPixel = map.latLngToContainerPoint(
+            L.latLng(point[0], point[1]),
+          );
           const distanceToFirst = firstPointPixel.distanceTo(clickPointPixel);
 
           // If within 30 pixels of first point, close the polygon
@@ -367,13 +544,22 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
             },
           }),
         );
-      } else if (drawingMode === "rectangle" && pointsRef.current.length === 1) {
+      } else if (
+        drawingMode === "rectangle" &&
+        pointsRef.current.length === 1
+      ) {
         // Show real-time rectangle preview
         const bounds = L.latLngBounds([pointsRef.current[0], e.latlng]);
         const ne = bounds.getNorthEast();
         const sw = bounds.getSouthWest();
-        const width = map.distance(L.latLng(sw.lat, sw.lng), L.latLng(sw.lat, ne.lng));
-        const height = map.distance(L.latLng(sw.lat, sw.lng), L.latLng(ne.lat, sw.lng));
+        const width = map.distance(
+          L.latLng(sw.lat, sw.lng),
+          L.latLng(sw.lat, ne.lng),
+        );
+        const height = map.distance(
+          L.latLng(sw.lat, sw.lng),
+          L.latLng(ne.lat, sw.lng),
+        );
         const area = width * height;
         const perimeter = 2 * (width + height);
 
@@ -410,8 +596,12 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
 
         if (pointsRef.current.length >= 2) {
           const firstPoint = pointsRef.current[0];
-          const firstPointPixel = map.latLngToContainerPoint(L.latLng(firstPoint[0], firstPoint[1]));
-          const cursorPointPixel = map.latLngToContainerPoint(L.latLng(cursorPoint[0], cursorPoint[1]));
+          const firstPointPixel = map.latLngToContainerPoint(
+            L.latLng(firstPoint[0], firstPoint[1]),
+          );
+          const cursorPointPixel = map.latLngToContainerPoint(
+            L.latLng(cursorPoint[0], cursorPoint[1]),
+          );
           const distanceToFirst = firstPointPixel.distanceTo(cursorPointPixel);
 
           // If within snap distance, snap to first point and change indicator
@@ -446,7 +636,7 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
         for (let i = 0; i < previewPoints.length - 1; i++) {
           perimeter += map.distance(
             L.latLng(previewPoints[i][0], previewPoints[i][1]),
-            L.latLng(previewPoints[i + 1][0], previewPoints[i + 1][1])
+            L.latLng(previewPoints[i + 1][0], previewPoints[i + 1][1]),
           );
         }
         const area = calculatePolygonArea(previewPoints);
@@ -454,12 +644,15 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
         if (tempPolylineRef.current) {
           map.removeLayer(tempPolylineRef.current);
         }
-        tempPolylineRef.current = L.polyline(previewPoints.map(p => L.latLng(p[0], p[1])), {
-          color: "#1890ff",
-          weight: 2,
-          opacity: 0.5,
-          dashArray: "5, 5",
-        }).addTo(map);
+        tempPolylineRef.current = L.polyline(
+          previewPoints.map((p) => L.latLng(p[0], p[1])),
+          {
+            color: "#1890ff",
+            weight: 2,
+            opacity: 0.5,
+            dashArray: "5, 5",
+          },
+        ).addTo(map);
 
         // Dispatch drawing info event
         window.dispatchEvent(
@@ -673,15 +866,27 @@ const DrawingInfoPanel: React.FC<DrawingInfoPanelProps> = ({
       {drawingMode === "circle" && metrics.radius !== undefined && (
         <>
           <div style={{ marginBottom: "6px" }}>
-            <Text type="secondary" style={{ fontSize: "12px" }}>Radius:</Text>
-            <Text style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}>
+            <Text type="secondary" style={{ fontSize: "12px" }}>
+              Radius:
+            </Text>
+            <Text
+              style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}
+            >
               {metrics.radius.toLocaleString()} m
             </Text>
           </div>
           {metrics.area !== undefined && (
             <div>
-              <Text type="secondary" style={{ fontSize: "12px" }}>Area:</Text>
-              <Text style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Area:
+              </Text>
+              <Text
+                style={{
+                  marginLeft: "8px",
+                  fontSize: "14px",
+                  color: "#ffffff",
+                }}
+              >
                 {metrics.area.toLocaleString()} m²
               </Text>
             </div>
@@ -692,31 +897,59 @@ const DrawingInfoPanel: React.FC<DrawingInfoPanelProps> = ({
       {drawingMode === "rectangle" && metrics.width !== undefined && (
         <>
           <div style={{ marginBottom: "6px" }}>
-            <Text type="secondary" style={{ fontSize: "12px" }}>Width:</Text>
-            <Text style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}>
+            <Text type="secondary" style={{ fontSize: "12px" }}>
+              Width:
+            </Text>
+            <Text
+              style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}
+            >
               {metrics.width.toLocaleString()} m
             </Text>
           </div>
           {metrics.height !== undefined && (
             <div style={{ marginBottom: "6px" }}>
-              <Text type="secondary" style={{ fontSize: "12px" }}>Height:</Text>
-              <Text style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Height:
+              </Text>
+              <Text
+                style={{
+                  marginLeft: "8px",
+                  fontSize: "14px",
+                  color: "#ffffff",
+                }}
+              >
                 {metrics.height.toLocaleString()} m
               </Text>
             </div>
           )}
           {metrics.area !== undefined && (
             <div style={{ marginBottom: "6px" }}>
-              <Text type="secondary" style={{ fontSize: "12px" }}>Area:</Text>
-              <Text style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Area:
+              </Text>
+              <Text
+                style={{
+                  marginLeft: "8px",
+                  fontSize: "14px",
+                  color: "#ffffff",
+                }}
+              >
                 {metrics.area.toLocaleString()} m²
               </Text>
             </div>
           )}
           {metrics.perimeter !== undefined && (
             <div>
-              <Text type="secondary" style={{ fontSize: "12px" }}>Perimeter:</Text>
-              <Text style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Perimeter:
+              </Text>
+              <Text
+                style={{
+                  marginLeft: "8px",
+                  fontSize: "14px",
+                  color: "#ffffff",
+                }}
+              >
                 {metrics.perimeter.toLocaleString()} m
               </Text>
             </div>
@@ -727,23 +960,43 @@ const DrawingInfoPanel: React.FC<DrawingInfoPanelProps> = ({
       {drawingMode === "polygon" && metrics.points !== undefined && (
         <>
           <div style={{ marginBottom: "6px" }}>
-            <Text type="secondary" style={{ fontSize: "12px" }}>Points:</Text>
-            <Text style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}>
+            <Text type="secondary" style={{ fontSize: "12px" }}>
+              Points:
+            </Text>
+            <Text
+              style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}
+            >
               {metrics.points}
             </Text>
           </div>
           {metrics.perimeter !== undefined && (
             <div style={{ marginBottom: "6px" }}>
-              <Text type="secondary" style={{ fontSize: "12px" }}>Perimeter:</Text>
-              <Text style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Perimeter:
+              </Text>
+              <Text
+                style={{
+                  marginLeft: "8px",
+                  fontSize: "14px",
+                  color: "#ffffff",
+                }}
+              >
                 {metrics.perimeter.toLocaleString()} m
               </Text>
             </div>
           )}
           {metrics.area !== undefined && (
             <div>
-              <Text type="secondary" style={{ fontSize: "12px" }}>Area:</Text>
-              <Text style={{ marginLeft: "8px", fontSize: "14px", color: "#ffffff" }}>
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                Area:
+              </Text>
+              <Text
+                style={{
+                  marginLeft: "8px",
+                  fontSize: "14px",
+                  color: "#ffffff",
+                }}
+              >
                 {metrics.area.toLocaleString()} m²
               </Text>
             </div>
@@ -755,15 +1008,53 @@ const DrawingInfoPanel: React.FC<DrawingInfoPanelProps> = ({
 };
 
 // Main Map Component
+// Feature Zoom Handler Component - Zooms to clicked feature
+interface FeatureZoomHandlerProps {
+  clickedResult?: any | null;
+}
+
+function FeatureZoomHandler({ clickedResult }: FeatureZoomHandlerProps) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (clickedResult?.coordinates) {
+      const coords = clickedResult.coordinates;
+
+      // Check if coordinates is a single point or an array of points
+      if (Array.isArray(coords)) {
+        // Check if it's a point [lat, lng] or polygon/line [[lat, lng], ...]
+        if (Array.isArray(coords[0])) {
+          // Array of points - use fitBounds for polygons, lines, etc.
+          const bounds = L.latLngBounds(coords as [number, number][]);
+          map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+        } else {
+          // Single point - use setView
+          map.setView(coords as [number, number], 14);
+        }
+      }
+    }
+  }, [clickedResult, map]);
+
+  return null;
+}
+
 interface MapComponentProps {
   drawingMode: "circle" | "polygon" | "rectangle" | null;
   markers: [number, number][];
+  hoveredResult?: any | null;
+  clickedResult?: any | null;
+  apiResponse?: any;
 }
 
 export const MapComponent: React.FC<MapComponentProps> = ({
   drawingMode,
+  hoveredResult,
+  clickedResult,
+  apiResponse,
 }) => {
-  const [drawingMetrics, setDrawingMetrics] = useState<DrawingMetrics | null>(null);
+  const [drawingMetrics, setDrawingMetrics] = useState<DrawingMetrics | null>(
+    null,
+  );
 
   // Listen for drawing info events
   useEffect(() => {
@@ -792,8 +1083,23 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       <ZoomControl position="bottomright" />
       {/* ESRI World Imagery for satellite view */}
       <TileLayer
-        attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+        attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and GIS User Community"
         url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+      />
+
+      {/* API Results Layer - Show all features */}
+      {apiResponse?.data?.results && apiResponse.data.results.length > 0 && (
+        <FeatureLayer
+          results={apiResponse.data.results}
+          hoveredResult={hoveredResult}
+          clickedResult={clickedResult}
+        />
+      )}
+
+      {/* Feature Coordinates Display - Bottom Center Popup */}
+      <FeatureCoordinatesDisplay
+        hoveredResult={hoveredResult}
+        clickedResult={clickedResult}
       />
 
       {/* Drawing Info Panel */}
@@ -801,6 +1107,9 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
       {/* Drawing Handler */}
       <DrawingHandler drawingMode={drawingMode} />
+
+      {/* Feature Zoom Handler - Zooms to clicked feature */}
+      <FeatureZoomHandler clickedResult={clickedResult} />
 
       {/* Render all markers */}
       {/*{markers.map((position, idx) => (

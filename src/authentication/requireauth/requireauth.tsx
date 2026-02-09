@@ -14,13 +14,12 @@ const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
   const getItem = localStorage.getItem("token");
 
   useEffect(() => {
-    if (getItem == undefined) {
-      navigate("/authentication/explore");
+    if (!getItem || getItem === "") {
+      navigate("/authentication/login");
     }
-    navigate("/dashboard");
   }, [getItem, navigate, location.pathname]);
 
-  return getItem == undefined ? <Spin /> : children;
+  return !getItem || getItem === "" ? <Spin /> : children;
 };
 
 export default RequireAuth;

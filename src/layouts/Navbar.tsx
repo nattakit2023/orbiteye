@@ -1,16 +1,16 @@
 import React from "react";
-import { Layout } from "antd";
+// import { Layout } from "antd";
 
-const { Header } = Layout;
+// const { Header } = Layout;
 
-const Navbar = () => {
-  const items = [];
+const Navbar: React.FC = () => {
+  // const items = [];
 
   return (
     <>
-      <Header width={200} style={{ background: "#fafafa" }}>
+      {/*<Header width={200} style={{ background: "#fafafa" }}>
 
-      </Header>
+      </Header>*/}
     </>
   );
 };

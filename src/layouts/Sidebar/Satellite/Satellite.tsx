@@ -1,27 +1,25 @@
 import React from "react";
 
-interface ResolutionProps {
+interface SatelliteProps {
   onSelectItem?: (itemId: string) => void;
   selectedItems?: string[];
 }
 
-const Resolution: React.FC<ResolutionProps> = ({
+const Satellite: React.FC<SatelliteProps> = ({
   onSelectItem,
   selectedItems = [],
 }) => {
-  const resolutionData = [
-    { id: "1", label: "Low", value: "Full HD" },
-    { id: "2", label: "Medium", value: "HD" },
-    { id: "3", label: "High", value: "2K" },
-    { id: "4", label: "Very High", value: "4K" },
+  const satelliteData = [
+    { id: "1", label: "THEOS", value: "Thai Earth Observation" },
+    { id: "2", label: "Sentinel", value: "ESA Satellite" },
+    { id: "3", label: "Landsat", value: "NASA Satellite" },
+    { id: "4", label: "SPOT", value: "Airbus Satellite" },
   ];
 
   return (
     <div className="w-full">
-      <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}
-      >
-        {resolutionData.map((item) => (
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        {satelliteData.map((item) => (
           <div
             key={item.id}
             onClick={() => onSelectItem?.(item.id)}
@@ -58,4 +56,4 @@ const Resolution: React.FC<ResolutionProps> = ({
   );
 };
 
-export default Resolution;
+export default Satellite;

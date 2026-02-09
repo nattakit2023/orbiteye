@@ -1,9 +1,5 @@
 import axios, { AxiosError } from "axios";
-import type { ApiRequest, ApiResponse } from "@/types/api";
-
-// API Base URL - Change this to your actual API endpoint
-const API_BASE_URL =
-  "https://api-gateway.gistda.or.th/api/2.0/resources/stac/theos2-cuf/search";
+import type { ApiRequest, ApiResponse, ImageData } from "@/types/api";
 
 /**
  * Custom fetcher function for SWR
@@ -32,8 +28,9 @@ export interface TransformedApiResponse {
       id: string;
       name: string;
       value: number;
-      coordinates?: [number, number];
+      coordinates?: [number, number] | [number, number][];
       timestamp: number;
+      imageData?: ImageData;
     }>;
   };
   error?: string;
@@ -111,37 +108,166 @@ const transformStacResponse = (
 
   // Transform features to results format
   const results = stacResponse.features.map((feature) => {
-    let coordinates: [number, number] | undefined;
+    let coordinates: [number, number] | [number, number][] | undefined;
 
     // Extract coordinates from geometry
     if (feature.geometry?.coordinates) {
       const coords = feature.geometry.coordinates;
+      const featureGeometryType = feature.geometry?.type;
+
       if (
-        geometryType === "Point" &&
+        featureGeometryType === "Point" &&
         Array.isArray(coords) &&
         coords.length >= 2
       ) {
         // Point coordinates: [lng, lat]
-        coordinates = [
-          coords[0] as unknown as number,
-          coords[1] as unknown as number,
-        ] as [number, number];
+        if (Array.isArray(coords) && coords.length >= 2) {
+          const lng = Number(coords[0]);
+          const lat = Number(coords[1]);
+          if (!isNaN(lng) && !isNaN(lat)) {
+            coordinates = [lng, lat] as [number, number];
+            console.log(
+              `✅ Extracted Point coordinates for ${feature.id}: [${lng}, ${lat}]`,
+            );
+          } else {
+            console.warn(
+              `⚠️ Invalid Point coordinates for ${feature.id}: [${coords[0]}, ${coords[1]}]`,
+            );
+          }
+        }
       } else if (
-        geometryType === "Polygon" &&
+        featureGeometryType === "Polygon" &&
         Array.isArray(coords) &&
         coords.length > 0 &&
         Array.isArray(coords[0]) &&
         coords[0].length > 0
       ) {
-        // For polygons, get first coordinate from first ring
+        // For polygons, get all coordinates from first ring
         const firstRing = coords[0];
         if (Array.isArray(firstRing) && firstRing.length >= 2) {
-          coordinates = [
-            firstRing[0] as unknown as number,
-            firstRing[1] as unknown as number,
-          ] as [number, number];
+          const polygonCoords: [number, number][] = firstRing
+            .map((coord) => {
+              if (Array.isArray(coord) && coord.length >= 2) {
+                const lng = Number(coord[0]);
+                const lat = Number(coord[1]);
+                return [lat, lng];
+              }
+              return undefined;
+            })
+            .filter((coord): coord is [number, number] => coord !== undefined);
+          coordinates = polygonCoords;
+          console.log(
+            `✅ Extracted Polygon coordinates for ${feature.id}: ${polygonCoords.length} points`,
+          );
+        } else {
+          console.warn(`⚠️ Invalid Polygon coordinates for ${feature.id}`);
         }
+      } else if (
+        featureGeometryType === "LineString" &&
+        Array.isArray(coords) &&
+        coords.length > 0 &&
+        Array.isArray(coords[0])
+      ) {
+        // LineString coordinates: [[lng, lat], [lng, lat], ...]
+        const lineStringCoords: [number, number][] = coords
+          .map((coord) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              const lng = Number(coord[0]);
+              const lat = Number(coord[1]);
+              return [lat, lng];
+            }
+            return undefined;
+          })
+          .filter((coord): coord is [number, number] => coord !== undefined);
+        coordinates = lineStringCoords;
+        console.log(
+          `✅ Extracted LineString coordinates for ${feature.id}: ${lineStringCoords.length} points`,
+        );
+      } else if (
+        featureGeometryType === "MultiPoint" &&
+        Array.isArray(coords) &&
+        coords.length > 0 &&
+        Array.isArray(coords[0])
+      ) {
+        // MultiPoint coordinates: [[lng, lat], [lng, lat], ...]
+        const multiPointCoords: [number, number][] = coords
+          .map((coord) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              const lng = Number(coord[0]);
+              const lat = Number(coord[1]);
+              return [lat, lng];
+            }
+            return undefined;
+          })
+          .filter((coord): coord is [number, number] => coord !== undefined);
+        coordinates = multiPointCoords;
+        console.log(
+          `✅ Extracted MultiPoint coordinates for ${feature.id}: ${multiPointCoords.length} points`,
+        );
+      } else if (
+        featureGeometryType === "MultiLineString" &&
+        Array.isArray(coords) &&
+        coords.length > 0 &&
+        Array.isArray(coords[0]) &&
+        Array.isArray(coords[0][0])
+      ) {
+        // MultiLineString coordinates: [[[lng, lat], ...], ...]
+        const multiLineStringCoords: [number, number][] = coords[0]
+          .map((coord) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              const lng = Number(coord[0]);
+              const lat = Number(coord[1]);
+              return [lat, lng];
+            }
+            return undefined;
+          })
+          .filter((coord): coord is [number, number] => coord !== undefined);
+        coordinates = multiLineStringCoords;
+        console.log(
+          `✅ Extracted MultiLineString coordinates for ${feature.id}: ${multiLineStringCoords.length} points`,
+        );
+      } else if (
+        featureGeometryType === "MultiPolygon" &&
+        Array.isArray(coords) &&
+        coords.length > 0 &&
+        Array.isArray(coords[0]) &&
+        Array.isArray(coords[0][0]) &&
+        Array.isArray(coords[0][0][0])
+      ) {
+        // MultiPolygon coordinates: [[[[lng, lat], ...], ...], ...]
+        const multiPolygonCoords: [number, number][] = coords[0][0]
+          .map((coord) => {
+            if (Array.isArray(coord) && coord.length >= 2) {
+              const lng = Number(coord[0]);
+              const lat = Number(coord[1]);
+              return [lat, lng];
+            }
+            return undefined;
+          })
+          .filter((coord): coord is [number, number] => coord !== undefined);
+        coordinates = multiPolygonCoords;
+        console.log(
+          `✅ Extracted MultiPolygon coordinates for ${feature.id}: ${multiPolygonCoords.length} points`,
+        );
+      } else {
+        // Unsupported geometry type - log warning
+        console.warn(
+          `❌ Unsupported geometry type "${featureGeometryType}" for feature ${feature.id}`,
+        );
+        console.log(`Feature geometry details:`, {
+          id: feature.id,
+          geometryType: feature.geometry?.type,
+          coordinates: feature.geometry?.coordinates,
+        });
       }
+    } else {
+      console.warn(`❌ No coordinates found for feature ${feature.id}`);
+      console.log(`Feature details:`, {
+        id: feature.id,
+        hasGeometry: !!feature.geometry,
+        geometryType: feature.geometry?.type,
+        hasCoordinates: !!feature.geometry?.coordinates,
+      });
     }
 
     // Get datetime timestamp
@@ -152,12 +278,36 @@ const transformStacResponse = (
       timestamp = new Date(feature.properties.created).getTime();
     }
 
+    // Extract ImageData from assets
+    let imageData: ImageData | undefined;
+    if (feature.assets) {
+      // Find thumbnail URL from assets with role "thumbnail"
+      const thumbnailAsset = Object.values(feature.assets).find(
+        (asset) => asset.roles && asset.roles.includes("thumbnail"),
+      );
+      const thumbnailUrl = thumbnailAsset?.href;
+
+      // Find download URL from assets with role "download"
+      const downloadAsset = Object.values(feature.assets).find(
+        (asset) => asset.roles && asset.roles.includes("download"),
+      );
+      const downloadUrl = downloadAsset?.href;
+
+      if (thumbnailUrl || downloadUrl) {
+        imageData = {
+          thumbnailUrl,
+          downloadUrl,
+        };
+      }
+    }
+
     return {
       id: feature.id,
       name: feature.collection || feature.id,
       value: feature.properties?.cloudNotation || 0,
       coordinates: coordinates,
       timestamp: timestamp,
+      imageData: imageData,
     };
   });
 
@@ -203,75 +353,14 @@ export const fetcher = async ([url, requestData]: [
   const maxRetries = 3;
   const baseDelay = 2000; // 2 seconds
 
-
-    let data = JSON.stringify({
-      intersects: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [102.45590015508692, 16.089334833780047],
-            [103.51641932064055, 16.089334833780047],
-            [103.51641932064055, 17.00068389749823],
-            [102.45590015508692, 17.00068389749823],
-            [102.45590015508692, 16.089334833780047],
-          ],
-        ],
-      },
-      datetime: "../2026-02-01T00:00:00.000Z",
-      filter: {
-        op: "and",
-        args: [
-          {
-            op: "<=",
-            args: [
-              {
-                property: "cloudNotation",
-              },
-              100,
-            ],
-          },
-          {
-            op: "<",
-            args: [
-              {
-                property: "globalIncidence",
-              },
-              50,
-            ],
-          },
-        ],
-      },
-      sortby: "-id",
-      offset: 0,
-      limit: 100,
-    });
-
-    let config = {
-      method: "post",
-      maxBodyLength: Infinity,
-      url: "https://api-gateway.gistda.or.th/api/2.0/resources/stac/theos2-cuf/search",
-      headers: {
-        "API-Key":
-          "aCgloe5LIZ1jCQjwQ4rrnYkNNekrugv7yhMiUAvjju4x7hFz4OeLAMyhMhLZVyjm",
-        "Content-Type": "application/json",
-      },
-      data: data,
-    };
-    axios
-      .request(config)
-      .then((response) => {
-        console.log(JSON.stringify(response.data));
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const requestConfig = {
         method: "post",
         maxBodyLength: Infinity,
-        url: "https://api-gateway.gistda.or.th/api/2.0/resources/stac/theos2-cuf/search",
+        url:
+          "https://api-gateway.gistda.or.th/api/2.0/resources/stac/theos2-cuf/search" +
+          url,
         headers: {
           "API-Key":
             "aCgloe5LIZ1jCQjwQ4rrnYkNNekrugv7yhMiUAvjju4x7hFz4OeLAMyhMhLZVyjm",
@@ -300,82 +389,94 @@ export const fetcher = async ([url, requestData]: [
     } catch (error) {
       const axiosError = error as AxiosError;
 
-      // // Check if we should retry based on error type
-      // const shouldRetry =
-      //   (axiosError.response && [503, 502, 504, 429].includes(axiosError.response.status)) ||
-      //   (!axiosError.response && axiosError.code === "ECONNABORTED") ||
-      //   (!axiosError.response && axiosError.code === "ETIMEDOUT");
+      // Check if we should retry based on error type
+      const shouldRetry =
+        (axiosError.response &&
+          [503, 502, 504, 429].includes(axiosError.response.status)) ||
+        (!axiosError.response && axiosError.code === "ECONNABORTED") ||
+        (!axiosError.response && axiosError.code === "ETIMEDOUT");
 
-      // // Log detailed error information
-      // console.error("API Error Details:", {
-      //   attempt: attempt + 1,
-      //   code: axiosError.code,
-      //   message: axiosError.message,
-      //   response: axiosError.response ? {
-      //     status: axiosError.response.status,
-      //     statusText: axiosError.response.statusText,
-      //     data: axiosError.response.data,
-      //     headers: axiosError.response.headers,
-      //   } : null,
-      //   config: axiosError.config ? {
-      //     url: axiosError.config.url,
-      //     method: axiosError.config.method,
-      //     headers: axiosError.config.headers,
-      //     data: axiosError.config.data,
-      //   } : null,
-      //   isAxiosError: axiosError.isAxiosError,
-      // });
+      // Log detailed error information
+      console.error("API Error Details:", {
+        attempt: attempt + 1,
+        code: axiosError.code,
+        message: axiosError.message,
+        response: axiosError.response
+          ? {
+              status: axiosError.response.status,
+              statusText: axiosError.response.statusText,
+              data: axiosError.response.data,
+              headers: axiosError.response.headers,
+            }
+          : null,
+        config: axiosError.config
+          ? {
+              url: axiosError.config.url,
+              method: axiosError.config.method,
+              headers: axiosError.config.headers,
+              data: axiosError.config.data,
+            }
+          : null,
+        isAxiosError: axiosError.isAxiosError,
+      });
 
-      // // If it's the last attempt or error is not retryable, handle the error
-      // if (attempt === maxRetries || !shouldRetry) {
-      //   console.error("API Error (final attempt):", axiosError);
+      // If it's the last attempt or error is not retryable, handle the error
+      if (attempt === maxRetries || !shouldRetry) {
+        console.error("API Error (final attempt):", axiosError);
 
-      //   // Fall back to mock data for server errors (500-599) or network errors
-      //   if (axiosError.response && axiosError.response.status >= 500) {
-      //     console.warn(`API server error (${axiosError.response.status}), falling back to mock data`);
-      //     console.warn("This might be a CORS or server availability issue");
-      //     return mockAnalyzeShape(requestData);
-      //   } else if (!axiosError.response) {
-      //     console.warn("Network error (no response from server), falling back to mock data");
-      //     console.warn("This might be a CORS, network, or timeout issue");
-      //     return mockAnalyzeShape(requestData);
-      //   }
+        // Fall back to mock data for server errors (500-599) or network errors
+        if (axiosError.response && axiosError.response.status >= 500) {
+          console.warn(
+            `API server error (${axiosError.response.status}), falling back to mock data`,
+          );
+          console.warn("This might be a CORS or server availability issue");
+          return mockAnalyzeShape(requestData);
+        } else if (!axiosError.response) {
+          console.warn(
+            "Network error (no response from server), falling back to mock data",
+          );
+          console.warn("This might be a CORS, network, or timeout issue");
+          return mockAnalyzeShape(requestData);
+        }
 
-      //   // Handle different error scenarios
-      //   if (axiosError.response) {
-      //     // Server responded with error status
-      //     const status = axiosError.response.status;
-      //     const errorMessage = status === 503
-      //       ? "Service temporarily unavailable (503)"
-      //       : status === 502
-      //       ? "Bad gateway (502)"
-      //       : status === 504
-      //       ? "Gateway timeout (504)"
-      //       : `Server error: ${status}`;
+        // Handle different error scenarios
+        if (axiosError.response) {
+          // Server responded with error status
+          const status = axiosError.response.status;
+          const errorMessage =
+            status === 503
+              ? "Service temporarily unavailable (503)"
+              : status === 502
+                ? "Bad gateway (502)"
+                : status === 504
+                  ? "Gateway timeout (504)"
+                  : `Server error: ${status}`;
 
-      //     return {
-      //       success: false,
-      //       error: errorMessage,
-      //       message: "Failed to fetch data from server. Using mock data instead.",
-      //     };
-      //   } else if (axiosError.request) {
-      //     // Request made but no response received
-      //     console.error("API No Response:", axiosError.message);
-      //     return {
-      //       success: false,
-      //       error: "No response from server",
-      //       message: "Network error - please check your connection. Using mock data instead.",
-      //     };
-      //   } else {
-      //     // Error setting up request
-      //     console.error("API Request Error:", axiosError.message);
-      //     return {
-      //       success: false,
-      //       error: axiosError.message,
-      //       message: "Failed to make request. Using mock data instead.",
-      //     };
-      //   }
-      // }
+          return {
+            success: false,
+            error: errorMessage,
+            message:
+              "Failed to fetch data from server. Using mock data instead.",
+          };
+        } else if (axiosError.request) {
+          // Request made but no response received
+          console.error("API No Response:", axiosError.message);
+          return {
+            success: false,
+            error: "No response from server",
+            message:
+              "Network error - please check your connection. Using mock data instead.",
+          };
+        } else {
+          // Error setting up request
+          console.error("API Request Error:", axiosError.message);
+          return {
+            success: false,
+            error: axiosError.message,
+            message: "Failed to make request. Using mock data instead.",
+          };
+        }
+      }
 
       // Calculate delay with exponential backoff
       const delay = baseDelay * Math.pow(2, attempt);

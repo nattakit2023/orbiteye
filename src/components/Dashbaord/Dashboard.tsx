@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
-import Button from "antd/es/button";
 import Avatar from "antd/es/avatar";
 import { Spin, message } from "antd";
 import {
-  MenuOutlined,
-  MenuUnfoldOutlined,
   HomeOutlined,
   EyeOutlined,
   UserOutlined,
@@ -33,11 +30,19 @@ interface DrawnShape {
 interface OutletContext {
   rightSidebarCollapsed: boolean;
   setRightSidebarCollapsed: (collapsed: boolean) => void;
+  hoveredResult?: any | null;
+  clickedResult?: any | null;
+  apiResponse?: any;
 }
 
 const Dashboard: React.FC = () => {
-  const { rightSidebarCollapsed, setRightSidebarCollapsed } =
-    useOutletContext<OutletContext>();
+  const {
+    rightSidebarCollapsed,
+    setRightSidebarCollapsed,
+    hoveredResult,
+    clickedResult,
+    apiResponse,
+  } = useOutletContext<OutletContext>();
   const [menuOpen, setMenuOpen] = useState(false);
   const [drawingMode, setDrawingMode] = useState<
     "circle" | "polygon" | "rectangle" | null
@@ -430,7 +435,13 @@ const Dashboard: React.FC = () => {
           />
         }
       >
-        <MapComponent drawingMode={drawingMode} markers={markers} />
+        <MapComponent
+          drawingMode={drawingMode}
+          markers={markers}
+          hoveredResult={hoveredResult}
+          clickedResult={clickedResult}
+          apiResponse={apiResponse}
+        />
       </Suspense>
 
       {/* Drawn Shapes Display - Center Bottom Popup */}
@@ -462,10 +473,10 @@ const Dashboard: React.FC = () => {
               const coordsStr = shape.coordinates
                 .map((coord) => `${coord[0].toFixed(6)},${coord[1].toFixed(6)}`)
                 .join(" | ");
-              const displayCoords =
-                coordsStr.length > 40
-                  ? coordsStr.substring(0, 40) + "..."
-                  : coordsStr;
+              // const displayCoords =
+              //   coordsStr.length > 40
+              //     ? coordsStr.substring(0, 40) + "..."
+              //     : coordsStr;
               const isCopied = copiedShapeId === shape.id;
 
               return (

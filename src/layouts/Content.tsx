@@ -11,10 +11,12 @@ interface ContentsProps {
   setSidebarCollapsed: (collapsed: boolean) => void;
   rightSidebarCollapsed: boolean;
   setRightSidebarCollapsed: (collapsed: boolean) => void;
+  hoveredResult?: any | null;
+  clickedResult?: any | null;
+  apiResponse?: any;
 }
 
 const Contents: React.FC<ContentsProps> = (props) => {
-
   return (
     <>
       {/* Open Toggle Button - Shows in Dashboard when sidebar is closed */}
@@ -49,7 +51,15 @@ const Contents: React.FC<ContentsProps> = (props) => {
 
       {/* Theme 1 */}
       <Content style={{ position: "relative" }}>
-        <Outlet context={{ rightSidebarCollapsed: props.rightSidebarCollapsed, setRightSidebarCollapsed: props.setRightSidebarCollapsed }} />
+        <Outlet
+          context={{
+            rightSidebarCollapsed: props.rightSidebarCollapsed,
+            setRightSidebarCollapsed: props.setRightSidebarCollapsed,
+            hoveredResult: props.hoveredResult,
+            clickedResult: props.clickedResult,
+            apiResponse: props.apiResponse,
+          }}
+        />
       </Content>
 
       {/* Theme 2 */}

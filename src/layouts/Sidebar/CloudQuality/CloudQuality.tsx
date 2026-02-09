@@ -1,19 +1,19 @@
 import React from "react";
 
-interface ResolutionProps {
+interface CloudQualityProps {
   onSelectItem?: (itemId: string) => void;
   selectedItems?: string[];
 }
 
-const Resolution: React.FC<ResolutionProps> = ({
+const CloudQuality: React.FC<CloudQualityProps> = ({
   onSelectItem,
   selectedItems = [],
 }) => {
-  const resolutionData = [
-    { id: "1", label: "Low", value: "Full HD" },
-    { id: "2", label: "Medium", value: "HD" },
-    { id: "3", label: "High", value: "2K" },
-    { id: "4", label: "Very High", value: "4K" },
+  const cloudQualityData = [
+    { id: "1", label: "Clear", value: "0-10%" },
+    { id: "2", label: "Low", value: "10-30%" },
+    { id: "3", label: "Medium", value: "30-50%" },
+    { id: "4", label: "High", value: "50%+" },
   ];
 
   return (
@@ -21,7 +21,7 @@ const Resolution: React.FC<ResolutionProps> = ({
       <div
         style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}
       >
-        {resolutionData.map((item) => (
+        {cloudQualityData.map((item) => (
           <div
             key={item.id}
             onClick={() => onSelectItem?.(item.id)}
@@ -58,4 +58,4 @@ const Resolution: React.FC<ResolutionProps> = ({
   );
 };
 
-export default Resolution;
+export default CloudQuality;

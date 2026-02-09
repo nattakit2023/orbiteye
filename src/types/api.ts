@@ -1,7 +1,13 @@
 // API Request Types
 // Geometry Types
 export interface GeoJSONGeometry {
-  type: "Point" | "LineString" | "Polygon" | "MultiPoint" | "MultiLineString" | "MultiPolygon";
+  type:
+    | "Point"
+    | "LineString"
+    | "Polygon"
+    | "MultiPoint"
+    | "MultiLineString"
+    | "MultiPolygon";
   coordinates: number[][] | number[][][] | number[][][][];
 }
 
@@ -90,6 +96,12 @@ export interface ApiRequest {
 //     "limit": 100
 // }
 
+// Image Data Types - For storing thumbnail/download URLs and image data
+export interface ImageData {
+  thumbnailUrl?: string;
+  downloadUrl?: string;
+  imageData?: string;
+}
 
 // API Response Types - STAC Format
 export interface ApiResponse {
