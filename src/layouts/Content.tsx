@@ -14,13 +14,14 @@ interface ContentsProps {
   hoveredResult?: any | null;
   clickedResult?: any | null;
   apiResponse?: any;
+  isFullWidth?: boolean;
 }
 
 const Contents: React.FC<ContentsProps> = (props) => {
   return (
     <>
-      {/* Open Toggle Button - Shows in Dashboard when sidebar is closed */}
-      {props.sidebarCollapsed && (
+      {/* Open Toggle Button - Shows in Dashboard when sidebar is closed and not full width */}
+      {props.sidebarCollapsed && !props.isFullWidth && (
         <Button
           type="text"
           icon={<MenuOutlined style={{ color: "white", fontSize: "14px" }} />}
@@ -50,7 +51,12 @@ const Contents: React.FC<ContentsProps> = (props) => {
       )}
 
       {/* Theme 1 */}
-      <Content style={{ position: "relative" }}>
+      <Content 
+       style={{ 
+         position: "relative",
+         ...(props.isFullWidth ? { width: "100%" } : {})
+       }}
+      >
         <Outlet
           context={{
             rightSidebarCollapsed: props.rightSidebarCollapsed,
@@ -58,6 +64,7 @@ const Contents: React.FC<ContentsProps> = (props) => {
             hoveredResult: props.hoveredResult,
             clickedResult: props.clickedResult,
             apiResponse: props.apiResponse,
+            isFullWidth: props.isFullWidth,
           }}
         />
       </Content>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Content from "../layouts/Content";
 import Sidebar from "../layouts/Sidebar";
 import RightSidebar from "../layouts/RightSidebar";
+import FeatureSidebar from "../layouts/FeatureSidebar";
 import { Layout } from "antd";
 import { useLocation } from "react-router-dom";
 import useSWR from "swr";
@@ -20,6 +21,17 @@ const App: React.FC = () => {
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true);
+  const [featureSidebarCollapsed, setFeatureSidebarCollapsed] = useState(false);
+
+  // Mock user profile data for feature sidebar
+  const [userProfile] = useState({
+    name: "John Doe",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
+    role: "Premium User",
+  });
+
+  // Check if current route is a feature page
+  const isFeatureRoute = location.pathname.startsWith('/feature/');
 
   // State for API request
   const [apiRequest, setApiRequest] = useState<ApiRequest | null>(null);
@@ -70,12 +82,20 @@ const App: React.FC = () => {
     <div className="w-full h-full">
       {/* Style 1 */}
       <Layout style={{ background: "#030416", height: "100vh" }}>
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          onCollapse={setSidebarCollapsed}
-          onOpenRightSidebar={() => setRightSidebarCollapsed(false)}
-          onAnalyze={handleAnalyze}
-        />
+        {!isFeatureRoute ? (
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            onCollapse={setSidebarCollapsed}
+            onOpenRightSidebar={() => setRightSidebarCollapsed(false)}
+            onAnalyze={handleAnalyze}
+          />
+        ) : (
+          <FeatureSidebar
+            collapsed={featureSidebarCollapsed}
+            onCollapse={setFeatureSidebarCollapsed}
+            userProfile={userProfile}
+          />
+        )}
 
         <Content
           data={location.pathname.slice(1)}
@@ -86,6 +106,9 @@ const App: React.FC = () => {
           hoveredResult={hoveredResult}
           clickedResult={clickedResult}
           apiResponse={apiResponse}
+          isFullWidth={isFeatureRoute}
+          featureSidebarCollapsed={featureSidebarCollapsed}
+          setFeatureSidebarCollapsed={setFeatureSidebarCollapsed}
         />
 
         <RightSidebar

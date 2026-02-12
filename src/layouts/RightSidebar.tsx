@@ -19,9 +19,11 @@ import {
   CalendarOutlined,
   InfoCircleOutlined,
   EnvironmentOutlined,
+  ShoppingOutlined,
 } from "@ant-design/icons";
 import "@/styles/sidebar.css";
 import type { TransformedApiResponse } from "@/service/api";
+import { useCart } from "@/context/CartContext";
 
 const { Text } = Typography;
 
@@ -56,6 +58,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
 }) => {
   // State for tracking hovered/clicked result
   const [activeResultId, setActiveResultId] = useState<string | null>(null);
+
+  // Cart context for adding items to cart
+  const { addToCart, isInCart } = useCart();
 
   // Generate deterministic gradient positions from result ID to avoid re-renders
   const getGradientPositions = useMemo(
@@ -957,6 +962,42 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                                 </div>
                               </div>
                             )}
+
+                          {/* Add to Cart Button */}
+                          <Button
+                            type="primary"
+                            icon={<ShoppingOutlined />}
+                            onClick={() => {
+                              const cartItem = {
+                                name: result.name,
+                                date: result.timestamp,
+                                cloud: typeof result.value === "number" ? result.value : 0,
+                                quality: "Excellent",
+                                imageUrl: result.imageData?.thumbnailUrl,
+                                price: 49.99,
+                                quantity: 1,
+                              };
+                              addToCart(cartItem);
+                            }}
+                            disabled={isInCart(`${result.name}-${result.timestamp}`)}
+                            style={{
+                              width: "100%",
+                              marginTop: "12px",
+                              height: "36px",
+                              fontWeight: 500,
+                              borderRadius: "6px",
+                              background: isInCart(`${result.name}-${result.timestamp}`)
+                                ? "#52c41a"
+                                : undefined,
+                              borderColor: isInCart(`${result.name}-${result.timestamp}`)
+                                ? "#52c41a"
+                                : undefined,
+                            }}
+                          >
+                            {isInCart(`${result.name}-${result.timestamp}`)
+                              ? "Added to Cart"
+                              : "Add to Cart"}
+                          </Button>
                         </Card>
                       ))}
                     </>

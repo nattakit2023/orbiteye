@@ -6,9 +6,17 @@ import Spin from "antd/es/spin";
 import App from "./components/App.tsx";
 import RequireAuth from "./authentication/requireauth/requireauth.tsx";
 import Authentication from "./components/Authentication.tsx";
+import { CartProvider } from "./context/CartContext.tsx";
+import { OrderProvider } from "./context/OrderContext.tsx";
 
 // Lazy load heavy routes
 const Dashboard = lazy(() => import("./components/Dashbaord/Dashboard.tsx"));
+const Overview = lazy(() => import("./components/Features/Overview.tsx"));
+const Profile = lazy(() => import("./components/Features/Profile.tsx"));
+const Favorites = lazy(() => import("./components/Features/Favorites.tsx"));
+const Cart = lazy(() => import("./components/Features/Cart.tsx"));
+const Order = lazy(() => import("./components/Features/Order.tsx"));
+const ChangePassword = lazy(() => import("./components/Features/ChangePassword.tsx"));
 // const Explore = lazy(() => import("./authentication/explore/explore.tsx"));
 const Login = lazy(() => import("./authentication/login/login.tsx"));
 
@@ -36,8 +44,10 @@ const LoadingFallback = () => (
 
 root.render(
   <React.StrictMode>
-    <AntApp>
-      <BrowserRouter>
+    <OrderProvider>
+      <CartProvider>
+        <AntApp>
+        <BrowserRouter>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             {/* Main authenticated layout with App wrapping all routes */}
@@ -51,6 +61,14 @@ root.render(
             >
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
+            
+              {/* Feature Routes */}
+              <Route path="/feature/overview" element={<Overview />} />
+              <Route path="/feature/profile" element={<Profile />} />
+              <Route path="/feature/favorites" element={<Favorites />} />
+              <Route path="/feature/cart" element={<Cart />} />
+              <Route path="/feature/order" element={<Order />} />
+              <Route path="/feature/change-password" element={<ChangePassword />} />
             </Route>
 
             {/* Authentication routes */}
@@ -62,5 +80,7 @@ root.render(
         </Suspense>
       </BrowserRouter>
     </AntApp>
+  </CartProvider>
+</OrderProvider>
   </React.StrictMode>,
 );

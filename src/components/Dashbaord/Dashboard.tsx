@@ -13,7 +13,7 @@ import {
   CopyOutlined,
   LeftOutlined,
 } from "@ant-design/icons";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useNavigate } from "react-router-dom";
 import "@/styles/dashboard.css";
 
 // Lazy load the map component
@@ -44,6 +44,7 @@ const Dashboard: React.FC = () => {
     apiResponse,
   } = useOutletContext<OutletContext>();
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
   const [drawingMode, setDrawingMode] = useState<
     "circle" | "polygon" | "rectangle" | null
   >(null);
@@ -272,6 +273,10 @@ const Dashboard: React.FC = () => {
                 alignItems: "center",
                 gap: "10px",
               }}
+              onClick={() => {
+                navigate("/dashboard");
+                setMenuOpen(false);
+              }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor = "#364762")
               }
@@ -290,6 +295,10 @@ const Dashboard: React.FC = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
+              }}
+              onClick={() => {
+                navigate("/feature/overview");
+                setMenuOpen(false);
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor = "#364762")
@@ -310,6 +319,10 @@ const Dashboard: React.FC = () => {
                 alignItems: "center",
                 gap: "10px",
               }}
+              onClick={() => {
+                navigate("/feature/profile");
+                setMenuOpen(false);
+              }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor = "#364762")
               }
@@ -328,6 +341,10 @@ const Dashboard: React.FC = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
+              }}
+              onClick={() => {
+                navigate("/feature/favorites");
+                setMenuOpen(false);
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor = "#364762")
@@ -348,6 +365,10 @@ const Dashboard: React.FC = () => {
                 alignItems: "center",
                 gap: "10px",
               }}
+              onClick={() => {
+                navigate("/feature/cart");
+                setMenuOpen(false);
+              }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor = "#364762")
               }
@@ -367,6 +388,10 @@ const Dashboard: React.FC = () => {
                 alignItems: "center",
                 gap: "10px",
               }}
+              onClick={() => {
+                navigate("/feature/order");
+                setMenuOpen(false);
+              }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor = "#364762")
               }
@@ -385,6 +410,10 @@ const Dashboard: React.FC = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
+              }}
+              onClick={() => {
+                navigate("/feature/change-password");
+                setMenuOpen(false);
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor = "#364762")
@@ -407,6 +436,12 @@ const Dashboard: React.FC = () => {
                 borderTop: "1px solid #404d63",
                 marginTop: "8px",
                 paddingTop: "12px",
+              }}
+              onClick={() => {
+                localStorage.removeItem("userToken");
+                localStorage.removeItem("userData");
+                navigate("/login");
+                setMenuOpen(false);
               }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor = "#364762")
