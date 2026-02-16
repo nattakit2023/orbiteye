@@ -72,7 +72,7 @@ const Profile: React.FC = () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-      
+
       // Update user profile
       setUserProfile({
         ...userProfile,
@@ -88,7 +88,9 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleAvatarChange = (info: { file: { status?: string; originFileObj?: File } }) => {
+  const handleAvatarChange = (info: {
+    file: { status?: string; originFileObj?: File };
+  }) => {
     if (info.file.status === "done" && info.file.originFileObj) {
       // In a real app, you would upload the file to a server
       // and get back the URL
@@ -113,343 +115,405 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        padding: "24px",
-        minHeight: "100vh",
-        backgroundColor: "#030416",
-        color: "#ffffff",
-      }}
-    >
-      <h1
+    <>
+      <style>{`
+        .rightsidebar-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .rightsidebar-scroll::-webkit-scrollbar-track {
+          background: #1a2332;
+          border-radius: 3px;
+        }
+
+        .rightsidebar-scroll::-webkit-scrollbar-thumb {
+          background: #293653;
+          border-radius: 3px;
+          transition: background 0.2s ease;
+        }
+
+        .rightsidebar-scroll::-webkit-scrollbar-thumb:hover {
+          background: #1890ff;
+        }
+
+        .rightsidebar-scroll::-webkit-scrollbar-thumb:active {
+          background: #1077e8;
+        }
+      `}</style>
+      <div
         style={{
-          fontSize: "28px",
-          fontWeight: 700,
-          marginBottom: "24px",
+          padding: "24px",
+          height: "100vh",
+          overflow: "hidden",
+          backgroundColor: "#030416",
           color: "#ffffff",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        My Profile
-      </h1>
-
-      <div style={{ marginBottom: "24px" }}>
-        <Card
+        <h1
           style={{
-            backgroundColor: "#0f1828",
-            border: "1px solid #404d63",
-            borderRadius: "12px",
+            fontSize: "28px",
+            fontWeight: 700,
+            marginBottom: "24px",
+            color: "#ffffff",
+            flex: "0 0 auto",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-            <div style={{ position: "relative" }}>
-              <Avatar
-                src={userProfile.avatar}
-                size={100}
-                style={{ backgroundColor: "#1890ff" }}
-              />
-              <Upload
-                showUploadList={false}
-                beforeUpload={beforeUpload}
-                onChange={handleAvatarChange}
-                accept="image/*"
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                }}
-              >
-                <Button
-                  type="primary"
-                  shape="circle"
-                  icon={<UploadOutlined />}
-                  size="small"
-                  style={{
-                    backgroundColor: "#1890ff",
-                    border: "2px solid #0f1828",
-                  }}
-                />
-              </Upload>
-            </div>
+          My Profile
+        </h1>
 
-            <div style={{ flex: 1 }}>
-              <h2
-                style={{
-                  fontSize: "24px",
-                  fontWeight: 600,
-                  marginBottom: "8px",
-                  color: "#ffffff",
-                  margin: 0,
-                }}
-              >
-                {userProfile.name}
-              </h2>
-              <p
-                style={{
-                  color: "#8c8c8c",
-                  fontSize: "14px",
-                  marginBottom: "4px",
-                  margin: 0,
-                }}
-              >
-                <MailOutlined style={{ marginRight: "4px" }} />
-                {userProfile.email}
-              </p>
-              <p
-                style={{
-                  color: "#8c8c8c",
-                  fontSize: "14px",
-                  marginBottom: "4px",
-                  margin: 0,
-                }}
-              >
-                <UserOutlined style={{ marginRight: "4px" }} />
-                {userProfile.role}
-              </p>
-            </div>
-
-            <Button
-              type={isEditing ? "default" : "primary"}
-              icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
-              onClick={isEditing ? handleSave : handleEditToggle}
-              loading={loading}
+        <div
+          className="rightsidebar-scroll"
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            paddingRight: "8px",
+          }}
+        >
+          <div style={{ marginBottom: "24px" }}>
+            <Card
               style={{
-                backgroundColor: isEditing ? "transparent" : "#1890ff",
-                borderColor: isEditing ? "#404d63" : "#1890ff",
-                color: isEditing ? "#ffffff" : "#ffffff",
-                height: "40px",
-                minWidth: "100px",
+                backgroundColor: "#0f1828",
+                border: "1px solid #404d63",
+                borderRadius: "12px",
               }}
             >
-              {isEditing ? "Save" : "Edit Profile"}
-            </Button>
-          </div>
-
-          {isEditing && (
-            <>
-              <Divider style={{ borderColor: "#404d63" }} />
-              <Form
-                form={form}
-                layout="vertical"
-                initialValues={userProfile}
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "20px" }}
               >
-                <Form.Item
-                  name="name"
-                  label={<span style={{ color: "#ffffff" }}>Full Name</span>}
-                  rules={[
-                    { required: true, message: "Please enter your full name" },
-                  ]}
-                >
-                  <Input
-                    prefix={<UserOutlined />}
-                    style={{
-                      backgroundColor: "#0f1828",
-                      borderColor: "#404d63",
-                      color: "#ffffff",
-                    }}
+                <div style={{ position: "relative" }}>
+                  <Avatar
+                    src={userProfile.avatar}
+                    size={100}
+                    style={{ backgroundColor: "#1890ff" }}
                   />
-                </Form.Item>
+                  <Upload
+                    showUploadList={false}
+                    beforeUpload={beforeUpload}
+                    onChange={handleAvatarChange}
+                    accept="image/*"
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      right: 0,
+                    }}
+                  >
+                    <Button
+                      type="primary"
+                      shape="circle"
+                      icon={<UploadOutlined />}
+                      size="small"
+                      style={{
+                        backgroundColor: "#1890ff",
+                        border: "2px solid #0f1828",
+                      }}
+                    />
+                  </Upload>
+                </div>
 
-                <Form.Item
-                  name="email"
-                  label={<span style={{ color: "#ffffff" }}>Email</span>}
-                  rules={[
-                    { required: true, message: "Please enter your email" },
-                    { type: "email", message: "Invalid email format" },
-                  ]}
-                >
-                  <Input
-                    prefix={<MailOutlined />}
+                <div style={{ flex: 1 }}>
+                  <h2
                     style={{
-                      backgroundColor: "#0f1828",
-                      borderColor: "#404d63",
+                      fontSize: "24px",
+                      fontWeight: 600,
+                      marginBottom: "8px",
                       color: "#ffffff",
+                      margin: 0,
                     }}
-                  />
-                </Form.Item>
+                  >
+                    {userProfile.name}
+                  </h2>
+                  <p
+                    style={{
+                      color: "#8c8c8c",
+                      fontSize: "14px",
+                      marginBottom: "4px",
+                      margin: 0,
+                    }}
+                  >
+                    <MailOutlined style={{ marginRight: "4px" }} />
+                    {userProfile.email}
+                  </p>
+                  <p
+                    style={{
+                      color: "#8c8c8c",
+                      fontSize: "14px",
+                      marginBottom: "4px",
+                      margin: 0,
+                    }}
+                  >
+                    <UserOutlined style={{ marginRight: "4px" }} />
+                    {userProfile.role}
+                  </p>
+                </div>
 
-                <Form.Item
-                  name="phone"
-                  label={<span style={{ color: "#ffffff" }}>Phone</span>}
+                <Button
+                  type={isEditing ? "default" : "primary"}
+                  icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
+                  onClick={isEditing ? handleSave : handleEditToggle}
+                  loading={loading}
+                  style={{
+                    backgroundColor: isEditing ? "transparent" : "#1890ff",
+                    borderColor: isEditing ? "#404d63" : "#1890ff",
+                    color: isEditing ? "#ffffff" : "#ffffff",
+                    height: "40px",
+                    minWidth: "100px",
+                  }}
                 >
-                  <Input
-                    prefix={<PhoneOutlined />}
-                    style={{
-                      backgroundColor: "#0f1828",
-                      borderColor: "#404d63",
-                      color: "#ffffff",
-                    }}
-                  />
-                </Form.Item>
+                  {isEditing ? "Save" : "Edit Profile"}
+                </Button>
+              </div>
 
-                <Form.Item
-                  name="location"
-                  label={<span style={{ color: "#ffffff" }}>Location</span>}
-                >
-                  <Input
-                    prefix={<EnvironmentOutlined />}
-                    style={{
-                      backgroundColor: "#0f1828",
-                      borderColor: "#404d63",
-                      color: "#ffffff",
-                    }}
-                  />
-                </Form.Item>
+              {isEditing && (
+                <>
+                  <Divider style={{ borderColor: "#404d63" }} />
+                  <Form
+                    form={form}
+                    layout="vertical"
+                    initialValues={userProfile}
+                  >
+                    <Form.Item
+                      name="name"
+                      label={
+                        <span style={{ color: "#ffffff" }}>Full Name</span>
+                      }
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter your full name",
+                        },
+                      ]}
+                    >
+                      <Input
+                        prefix={<UserOutlined />}
+                        style={{
+                          backgroundColor: "#0f1828",
+                          borderColor: "#404d63",
+                          color: "#ffffff",
+                        }}
+                      />
+                    </Form.Item>
 
-                <Form.Item
-                  name="bio"
-                  label={<span style={{ color: "#ffffff" }}>Bio</span>}
-                >
-                  <TextArea
-                    rows={4}
+                    <Form.Item
+                      name="email"
+                      label={<span style={{ color: "#ffffff" }}>Email</span>}
+                      rules={[
+                        { required: true, message: "Please enter your email" },
+                        { type: "email", message: "Invalid email format" },
+                      ]}
+                    >
+                      <Input
+                        prefix={<MailOutlined />}
+                        style={{
+                          backgroundColor: "#0f1828",
+                          borderColor: "#404d63",
+                          color: "#ffffff",
+                        }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="phone"
+                      label={<span style={{ color: "#ffffff" }}>Phone</span>}
+                    >
+                      <Input
+                        prefix={<PhoneOutlined />}
+                        style={{
+                          backgroundColor: "#0f1828",
+                          borderColor: "#404d63",
+                          color: "#ffffff",
+                        }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="location"
+                      label={<span style={{ color: "#ffffff" }}>Location</span>}
+                    >
+                      <Input
+                        prefix={<EnvironmentOutlined />}
+                        style={{
+                          backgroundColor: "#0f1828",
+                          borderColor: "#404d63",
+                          color: "#ffffff",
+                        }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="bio"
+                      label={<span style={{ color: "#ffffff" }}>Bio</span>}
+                    >
+                      <TextArea
+                        rows={4}
+                        style={{
+                          backgroundColor: "#0f1828",
+                          borderColor: "#404d63",
+                          color: "#ffffff",
+                        }}
+                      />
+                    </Form.Item>
+                  </Form>
+                </>
+              )}
+            </Card>
+          </div>
+
+          <Card
+            title={
+              <span
+                style={{ color: "#ffffff", fontSize: "16px", fontWeight: 600 }}
+              >
+                Account Settings
+              </span>
+            }
+            style={{
+              backgroundColor: "#0f1828",
+              border: "1px solid #404d63",
+              borderRadius: "12px",
+            }}
+            headStyle={{
+              borderBottom: "1px solid #404d63",
+              color: "#ffffff",
+            }}
+          >
+            <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div>
+                  <div
                     style={{
-                      backgroundColor: "#0f1828",
-                      borderColor: "#404d63",
                       color: "#ffffff",
+                      fontSize: "14px",
+                      marginBottom: "4px",
                     }}
-                  />
-                </Form.Item>
-              </Form>
-            </>
-          )}
-        </Card>
+                  >
+                    <MailOutlined
+                      style={{ marginRight: "8px", color: "#1890ff" }}
+                    />
+                    Email Notifications
+                  </div>
+                  <div style={{ color: "#8c8c8c", fontSize: "12px" }}>
+                    Receive email updates about your account
+                  </div>
+                </div>
+                <Switch
+                  checked={settings.emailNotifications}
+                  onChange={(checked) =>
+                    setSettings({ ...settings, emailNotifications: checked })
+                  }
+                />
+              </div>
+
+              <Divider style={{ borderColor: "#404d63", margin: "16px 0" }} />
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      color: "#ffffff",
+                      fontSize: "14px",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    <BellOutlined
+                      style={{ marginRight: "8px", color: "#52c41a" }}
+                    />
+                    Push Notifications
+                  </div>
+                  <div style={{ color: "#8c8c8c", fontSize: "12px" }}>
+                    Receive push notifications on your device
+                  </div>
+                </div>
+                <Switch
+                  checked={settings.pushNotifications}
+                  onChange={(checked) =>
+                    setSettings({ ...settings, pushNotifications: checked })
+                  }
+                />
+              </div>
+
+              <Divider style={{ borderColor: "#404d63", margin: "16px 0" }} />
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      color: "#ffffff",
+                      fontSize: "14px",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    <EyeOutlined
+                      style={{ marginRight: "8px", color: "#722ed1" }}
+                    />
+                    Public Profile
+                  </div>
+                  <div style={{ color: "#8c8c8c", fontSize: "12px" }}>
+                    Allow others to see your profile
+                  </div>
+                </div>
+                <Switch
+                  checked={settings.publicProfile}
+                  onChange={(checked) =>
+                    setSettings({ ...settings, publicProfile: checked })
+                  }
+                />
+              </div>
+
+              <Divider style={{ borderColor: "#404d63", margin: "16px 0" }} />
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      color: "#ffffff",
+                      fontSize: "14px",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    Online Status
+                  </div>
+                  <div style={{ color: "#8c8c8c", fontSize: "12px" }}>
+                    Show when you're online
+                  </div>
+                </div>
+                <Switch
+                  checked={settings.showOnlineStatus}
+                  onChange={(checked) =>
+                    setSettings({ ...settings, showOnlineStatus: checked })
+                  }
+                />
+              </div>
+            </Space>
+          </Card>
+        </div>
       </div>
-
-      <Card
-        title={
-          <span style={{ color: "#ffffff", fontSize: "16px", fontWeight: 600 }}>
-            Account Settings
-          </span>
-        }
-        style={{
-          backgroundColor: "#0f1828",
-          border: "1px solid #404d63",
-          borderRadius: "12px",
-        }}
-        headStyle={{
-          borderBottom: "1px solid #404d63",
-          color: "#ffffff",
-        }}
-      >
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>
-                <MailOutlined style={{ marginRight: "8px", color: "#1890ff" }} />
-                Email Notifications
-              </div>
-              <div style={{ color: "#8c8c8c", fontSize: "12px" }}>
-                Receive email updates about your account
-              </div>
-            </div>
-            <Switch
-              checked={settings.emailNotifications}
-              onChange={(checked) =>
-                setSettings({ ...settings, emailNotifications: checked })
-              }
-            />
-          </div>
-
-          <Divider style={{ borderColor: "#404d63", margin: "16px 0" }} />
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>
-                <BellOutlined style={{ marginRight: "8px", color: "#52c41a" }} />
-                Push Notifications
-              </div>
-              <div style={{ color: "#8c8c8c", fontSize: "12px" }}>
-                Receive push notifications on your device
-              </div>
-            </div>
-            <Switch
-              checked={settings.pushNotifications}
-              onChange={(checked) =>
-                setSettings({ ...settings, pushNotifications: checked })
-              }
-            />
-          </div>
-
-          <Divider style={{ borderColor: "#404d63", margin: "16px 0" }} />
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>
-                <EyeOutlined style={{ marginRight: "8px", color: "#722ed1" }} />
-                Public Profile
-              </div>
-              <div style={{ color: "#8c8c8c", fontSize: "12px" }}>
-                Allow others to see your profile
-              </div>
-            </div>
-            <Switch
-              checked={settings.publicProfile}
-              onChange={(checked) =>
-                setSettings({ ...settings, publicProfile: checked })
-              }
-            />
-          </div>
-
-          <Divider style={{ borderColor: "#404d63", margin: "16px 0" }} />
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <div style={{ color: "#ffffff", fontSize: "14px", marginBottom: "4px" }}>
-                Online Status
-              </div>
-              <div style={{ color: "#8c8c8c", fontSize: "12px" }}>
-                Show when you're online
-              </div>
-            </div>
-            <Switch
-              checked={settings.showOnlineStatus}
-              onChange={(checked) =>
-                setSettings({ ...settings, showOnlineStatus: checked })
-              }
-            />
-          </div>
-        </Space>
-
-        <Divider style={{ borderColor: "#404d63", margin: "24px 0" }} />
-
-        <Button
-          type="default"
-          danger
-          icon={<LockOutlined />}
-          onClick={() => message.info("Change password functionality coming soon!")}
-          style={{
-            width: "100%",
-            borderColor: "#ff4d4f",
-            color: "#ff4d4f",
-          }}
-        >
-          Change Password
-        </Button>
-      </Card>
-    </div>
+    </>
   );
 };
 

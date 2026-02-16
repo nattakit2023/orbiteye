@@ -12,7 +12,6 @@ import {
   Progress,
   Tag,
   Image,
-  InputNumber,
   Modal,
 } from "antd";
 import {
@@ -27,7 +26,7 @@ import { useCart } from "@/context/CartContext";
 import { useOrder } from "@/context/OrderContext";
 
 const Cart: React.FC = () => {
-  const { cartItems, removeFromCart, clearCart, updateQuantity } = useCart();
+  const { cartItems, removeFromCart, clearCart } = useCart();
   const { addOrder } = useOrder();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = React.useState(false);
 
@@ -39,11 +38,6 @@ const Cart: React.FC = () => {
   const handleClearCart = () => {
     clearCart();
     message.success("Cart cleared");
-  };
-
-  const handleQuantityChange = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    updateQuantity(id, newQuantity);
   };
 
   const calculateSubtotal = () => {
@@ -70,7 +64,7 @@ const Cart: React.FC = () => {
   const handlePaymentSuccess = () => {
     // Save order to OrderContext
     addOrder(cartItems, calculateTotal());
-    
+
     setIsPaymentModalOpen(false);
     clearCart();
     message.success("Payment successful! Thank you for your order.");
@@ -425,38 +419,6 @@ const Cart: React.FC = () => {
                               Cloudy
                             </span>
                           </div>
-                        </div>
-
-                        {/* Quantity Control */}
-                        <div
-                          style={{
-                            marginTop: "16px",
-                            marginBottom: "16px",
-                          }}
-                        >
-                          <div
-                            style={{
-                              color: "#8c8c8c",
-                              fontSize: "12px",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            Quantity
-                          </div>
-                          <InputNumber
-                            min={1}
-                            max={10}
-                            value={item.quantity}
-                            onChange={(value) =>
-                              handleQuantityChange(item.id, value || 1)
-                            }
-                            style={{
-                              backgroundColor: "#030416",
-                              borderColor: "#404d63",
-                              color: "#ffffff",
-                              width: "120px",
-                            }}
-                          />
                         </div>
                       </Col>
 

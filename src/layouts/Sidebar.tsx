@@ -38,8 +38,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onAnalyze,
 }) => {
   const [sidenavType] = useState("transparent");
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [selectedSatellites, setSelectedSatellites] = useState<string[]>([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>(["1","2","3","4"]);
+  const [selectedSatellites, setSelectedSatellites] = useState<string[]>(["1"]);
   const [selectedCloudQualities, setSelectedCloudQualities] = useState<
     string[]
   >([]);
@@ -90,122 +90,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       dates: selectedDates,
     });
     console.log("Current shape:", currentShape);
-
-    // Build filter args based on selections
-    // const filterArgs: Array<
-    //   FilterOperation | PropertyReference | number | string
-    // > = [];
-
-    // Add cloud quality filter based on selection
-    // if (selectedCloudQualities.length > 0) {
-    //   const cloudQualityFilters: Array<
-    //     FilterOperation | PropertyReference | number | string
-    //   > = [];
-
-    //   // "1" (Clear): 0-10% -> cloudNotation <= 10
-    //   if (selectedCloudQualities.includes("1")) {
-    //     cloudQualityFilters.push({
-    //       op: "<=",
-    //       args: [
-    //         {
-    //           property: "cloudNotation",
-    //         },
-    //         10,
-    //       ],
-    //     } as const);
-    //   }
-
-    //   // "2" (Low): 10-30% -> cloudNotation > 10 && cloudNotation <= 30
-    //   if (selectedCloudQualities.includes("2")) {
-    //     cloudQualityFilters.push({
-    //       op: "and",
-    //       args: [
-    //         {
-    //           op: ">",
-    //           args: [
-    //             {
-    //               property: "cloudNotation",
-    //             },
-    //             10,
-    //           ],
-    //         } as const,
-    //         {
-    //           op: "<=",
-    //           args: [
-    //             {
-    //               property: "cloudNotation",
-    //             },
-    //             30,
-    //           ],
-    //         } as const,
-    //       ],
-    //     } as const);
-    //   }
-
-    //   // "3" (Medium): 30-50% -> cloudNotation > 30 && cloudNotation <= 50
-    //   if (selectedCloudQualities.includes("3")) {
-    //     cloudQualityFilters.push({
-    //       op: "and",
-    //       args: [
-    //         {
-    //           op: ">",
-    //           args: [
-    //             {
-    //               property: "cloudNotation",
-    //             },
-    //             30,
-    //           ],
-    //         } as const,
-    //         {
-    //           op: "<=",
-    //           args: [
-    //             {
-    //               property: "cloudNotation",
-    //             },
-    //             50,
-    //           ],
-    //         } as const,
-    //       ],
-    //     } as const);
-    //   }
-
-    //   // "4" (High): 50%+ -> cloudNotation > 50
-    //   if (selectedCloudQualities.includes("4")) {
-    //     cloudQualityFilters.push({
-    //       op: ">",
-    //       args: [
-    //         {
-    //           property: "cloudNotation",
-    //         },
-    //         50,
-    //       ],
-    //     } as const);
-    //   }
-
-    //   // If multiple cloud quality selections, combine with OR
-    //   if (cloudQualityFilters.length > 0) {
-    //     const cloudFilter =
-    //       cloudQualityFilters.length === 1
-    //         ? cloudQualityFilters[0]
-    //         : ({
-    //             op: "or",
-    //             args: cloudQualityFilters,
-    //           } as const);
-    //     filterArgs.push(cloudFilter);
-    //   }
-    // }
-
-    // Add global incidence filter (always include)
-    // filterArgs.push({
-    //   op: "<",
-    //   args: [
-    //     {
-    //       property: "globalIncidence",
-    //     },
-    //     50,
-    //   ],
-    // } as const);
-
     // Prepare API request data with correct structure
     const requestData: ApiRequest = {
       intersects: currentShape
@@ -223,16 +107,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                   coordinates: [
                     currentShape.coordinates.map(([lat, lng]) => [lng, lat]),
                   ],
-                  // 16.193575,98.767090 | 16.066929,101.623535 | 14.881087,101.744385 | 14.796128,98.250732 | 16.204125,98.767090
-                  // coordinates: [
-                  //   [
-                  //     [102.45590015508692, 16.089334833780047],
-                  //     [103.51641932064055, 16.089334833780047],
-                  //     [103.51641932064055, 17.00068389749823],
-                  //     [102.45590015508692, 17.00068389749823],
-                  //     [102.45590015508692, 16.089334833780047],
-                  //   ],
-                  // ],
                 }),
           }
         : {

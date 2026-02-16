@@ -47,7 +47,7 @@ interface OrderItem {
 const Order: React.FC = () => {
   const { getOrders } = useOrder();
   const realOrders = getOrders();
-  
+
   // Transform real orders from OrderContext to OrderItem format
   const orders = realOrders.map((realOrder) => ({
     id: realOrder.id,
@@ -461,7 +461,6 @@ const Order: React.FC = () => {
                           onClick={() => handleViewOrder(order)}
                           style={{
                             borderColor: "#404d63",
-                            color: "#ffffff",
                           }}
                         >
                           View Details
@@ -473,10 +472,6 @@ const Order: React.FC = () => {
                           disabled={order.status === "cancelled"}
                           style={{
                             borderColor: "#404d63",
-                            color:
-                              order.status === "cancelled"
-                                ? "#8c8c8c"
-                                : "#ffffff",
                           }}
                         >
                           Download
@@ -494,7 +489,7 @@ const Order: React.FC = () => {
         <Modal
           title={
             <span
-              style={{ color: "#ffffff", fontSize: "18px", fontWeight: 600 }}
+              style={{ color: "#000000", fontSize: "18px", fontWeight: 600 }}
             >
               Order Details - {selectedOrder?.orderNumber}
             </span>
@@ -515,7 +510,7 @@ const Order: React.FC = () => {
             <>
               <Descriptions
                 bordered
-                column={{ xs: 1, sm: 2 }}
+                column={2}
                 style={{
                   backgroundColor: "#0f1828",
                   borderColor: "#404d63",
@@ -558,9 +553,6 @@ const Order: React.FC = () => {
                 </Descriptions.Item>
                 <Descriptions.Item label="Payment Method">
                   {selectedOrder.paymentMethod}
-                </Descriptions.Item>
-                <Descriptions.Item label="Order Items">
-                  {selectedOrder.items.join(", ")}
                 </Descriptions.Item>
               </Descriptions>
 

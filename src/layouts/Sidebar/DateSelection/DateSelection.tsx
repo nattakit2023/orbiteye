@@ -60,6 +60,9 @@ const DateSelection: React.FC<DateSelectionProps> = ({ onDateChange }) => {
           border-color: #1890ff !important;
           box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
         }
+        .dark svg{
+          color: #FFFFFF !important;
+        }
         .dark-calendar .ant-picker-panel-container {
           background-color: #1a2332 !important;
           border: 1px solid #404d63 !important;
@@ -69,6 +72,9 @@ const DateSelection: React.FC<DateSelectionProps> = ({ onDateChange }) => {
           color: #FFFFFF !important;
         }
         .dark-calendar .ant-picker-header-view button {
+          color: #FFFFFF !important;
+        }
+        .dark-calendar .ant-picker-header button {
           color: #FFFFFF !important;
         }
         .dark-calendar .ant-picker-cell {
@@ -97,6 +103,9 @@ const DateSelection: React.FC<DateSelectionProps> = ({ onDateChange }) => {
           background-color: #1890ff !important;
           border-color: #1890ff !important;
           color: #FFFFFF !important;
+        }
+        .dark-calendar .ant-picker-content th {
+        color: #FFFFFF !important;
         }
       `}</style>
     </div>

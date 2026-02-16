@@ -6,7 +6,7 @@ export interface OrderItem {
   items: CartItem[];
   totalAmount: number;
   orderDate: number;
-  status: "completed" | "processing" | "pending";
+  status: "completed" | "processing" | "pending" | "cancelled";
 }
 
 interface OrderContextType {
@@ -40,7 +40,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
       items: [...items],
       totalAmount,
       orderDate: Date.now(),
-      status: "completed",
+      status: "pending",
     };
 
     setOrders((prev) => [newOrder, ...prev]);

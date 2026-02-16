@@ -88,35 +88,71 @@ const ChangePassword: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        padding: "24px",
-        minHeight: "100vh",
-        backgroundColor: "#030416",
-        color: "#ffffff",
-      }}
-    >
-      <h1
+    <>
+      <style>{`
+        .rightsidebar-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .rightsidebar-scroll::-webkit-scrollbar-track {
+          background: #1a2332;
+          border-radius: 3px;
+        }
+
+        .rightsidebar-scroll::-webkit-scrollbar-thumb {
+          background: #293653;
+          border-radius: 3px;
+          transition: background 0.2s ease;
+        }
+
+        .rightsidebar-scroll::-webkit-scrollbar-thumb:hover {
+          background: #1890ff;
+        }
+
+        .rightsidebar-scroll::-webkit-scrollbar-thumb:active {
+          background: #1077e8;
+        }
+      `}</style>
+      <div
         style={{
-          fontSize: "28px",
-          fontWeight: 700,
-          marginBottom: "24px",
+          padding: "24px",
+          height: "100vh",
+          overflow: "hidden",
+          backgroundColor: "#030416",
           color: "#ffffff",
           display: "flex",
-          alignItems: "center",
-          gap: "12px",
+          flexDirection: "column",
         }}
       >
-        <LockOutlined style={{ color: "#1890ff" }} />
-        Change Password
-      </h1>
+        <h1
+          style={{
+            fontSize: "28px",
+            fontWeight: 700,
+            marginBottom: "24px",
+            color: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            flex: "0 0 auto",
+          }}
+        >
+          <LockOutlined style={{ color: "#1890ff" }} />
+          Change Password
+        </h1>
 
-      <Card
+        <div
+          className="rightsidebar-scroll"
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            paddingRight: "8px",
+          }}
+        >
+          <Card
         style={{
           backgroundColor: "#0f1828",
           border: "1px solid #404d63",
           borderRadius: "12px",
-          maxWidth: "600px",
         }}
         headStyle={{
           borderBottom: "1px solid #404d63",
@@ -124,8 +160,12 @@ const ChangePassword: React.FC = () => {
         }}
       >
         <Alert
-          message="Security Notice"
-          description="For your security, please choose a strong password that you don't use elsewhere. Your password should be at least 8 characters long."
+          message={<span style={{ color: "#8c8c8c" }}>Security Notice</span>}
+          description={
+            <div style={{ color: "#8c8c8c" }}>
+              For your security, please choose a strong password that you don't use elsewhere. Your password should be at least 8 characters long.
+            </div>
+          }
           type="info"
           showIcon
           icon={<SafetyOutlined />}
@@ -323,7 +363,7 @@ const ChangePassword: React.FC = () => {
       </Card>
 
       <Alert
-        message="Password Tips"
+        message={<span style={{ color: "#8c8c8c" }}>Password Tip</span>}
         description={
           <div style={{ color: "#8c8c8c", fontSize: "13px" }}>
             <div style={{ marginBottom: "8px" }}>
@@ -347,7 +387,9 @@ const ChangePassword: React.FC = () => {
           color: "#ffffff",
         }}
       />
-    </div>
+        </div>
+      </div>
+    </>
   );
 };
 
