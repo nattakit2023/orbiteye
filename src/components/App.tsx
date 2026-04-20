@@ -107,8 +107,8 @@ const App: React.FC = () => {
           clickedResult={clickedResult}
           apiResponse={apiResponse}
           isFullWidth={isFeatureRoute}
-          featureSidebarCollapsed={featureSidebarCollapsed}
-          setFeatureSidebarCollapsed={setFeatureSidebarCollapsed}
+          // featureSidebarCollapsed={featureSidebarCollapsed}
+          // setFeatureSidebarCollapsed={setFeatureSidebarCollapsed}
         />
 
         <RightSidebar

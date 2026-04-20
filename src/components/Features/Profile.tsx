@@ -18,7 +18,6 @@ import {
   EnvironmentOutlined,
   EditOutlined,
   UploadOutlined,
-  LockOutlined,
   BellOutlined,
   EyeOutlined,
   SaveOutlined,

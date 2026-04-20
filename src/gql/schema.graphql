@@ -1,0 +1,326 @@
+type ActivityLog {
+  action: String!
+  activityType: ActivityType!
+  createdAt: DateTime!
+  entityId: String
+  entityType: String!
+  id: Int!
+  ipAddress: String
+  metadata: String
+  severity: Severity!
+  userAgent: String
+  userId: Int
+}
+
+input ActivityLogFilterInput {
+  activityType: ActivityType
+  endDate: DateTime
+  entityType: String
+  severity: Severity
+  startDate: DateTime
+  userId: Int
+}
+
+type ActivitySummary {
+  logsBySeverity: [SeverityCount!]!
+  logsByType: [TypeCount!]!
+  recentLogs: [ActivityLog!]!
+  totalLogs: Int!
+}
+
+enum ActivityType {
+  AuthenticationFailed
+  CartConverted
+  CartCreated
+  CartUpdated
+  OrderCancelled
+  OrderCreated
+  OrderUpdated
+  PasswordChanged
+  ProfileUpdated
+  SystemError
+  UserCreated
+  UserDeleted
+  UserLogin
+  UserLogout
+  UserUpdated
+}
+
+input AddCartItemInput {
+  cartId: Int!
+  productId: Int!
+  quantity: Int!
+  unitPrice: Float!
+}
+
+type AuthResponse {
+  expiresIn: Int!
+  refreshToken: String
+  token: String!
+  tokenType: String!
+  user: User!
+}
+
+type Cart {
+  createdAt: DateTime!
+  id: Int!
+  items: [CartItem!]!
+  status: CartStatus!
+  totalAmount: Float!
+  updatedAt: DateTime!
+  userId: Int!
+}
+
+type CartItem {
+  id: Int!
+  productId: Int!
+  productName: String!
+  quantity: Int!
+  subtotal: Float!
+  unitPrice: Float!
+}
+
+enum CartStatus {
+  Abandoned
+  Active
+  Converted
+}
+
+input ConvertCartToOrderInput {
+  cartId: Int!
+  notes: String
+  shippingAddress: ShippingAddressInput!
+}
+
+input CreateActivityLogInput {
+  action: String!
+  activityType: ActivityType!
+  entityId: String
+  entityType: String!
+  ipAddress: String
+  metadata: String
+  severity: Severity!
+  userAgent: String
+  userId: Int
+}
+
+input CreateCartInput {
+  userId: Int!
+}
+
+input CreateOrderInput {
+  items: [CreateOrderItemInput!]!
+  notes: String
+  shippingAddress: ShippingAddressInput!
+  userId: Int!
+}
+
+input CreateOrderItemInput {
+  productId: Int!
+  quantity: Int!
+  unitPrice: Float!
+}
+
+input CreateUserInput {
+  email: String!
+  fullName: String!
+  password: String!
+  role: String
+}
+
+scalar DateTime
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  addCartItem(input: AddCartItemInput!): Cart!
+  cancelOrder(id: String!): Order!
+  changePassword(currentPassword: String!, id: String!, newPassword: String!): Boolean!
+  convertCartToOrder(input: ConvertCartToOrderInput!): Order!
+  createActivityLog(input: CreateActivityLogInput!): ActivityLog!
+  createCart(input: CreateCartInput!): Cart!
+  createOrder(input: CreateOrderInput!): Order!
+  createUser(input: CreateUserInput!): User!
+  deleteUser(id: String!): Boolean!
+  login(input: LoginInput!): AuthResponse!
+  logout: Boolean!
+  refreshToken(refreshToken: String!): AuthResponse!
+  register(input: CreateUserInput!): AuthResponse!
+  removeCartItem(input: RemoveCartItemInput!): Cart!
+  resetPassword(email: String!): Boolean!
+  updateCartItem(input: UpdateCartItemInput!): Cart!
+  updateOrder(id: String!, input: UpdateOrderInput!): Order!
+  updateUser(id: String!, input: UpdateUserInput!): User!
+}
+
+type Order {
+  createdAt: DateTime!
+  id: Int!
+  items: [OrderItem!]!
+  notes: String
+  shippingAddress: ShippingAddress
+  status: OrderStatus!
+  totalAmount: Float!
+  updatedAt: DateTime!
+  userId: Int!
+}
+
+type OrderItem {
+  id: Int!
+  productId: Int!
+  productName: String!
+  quantity: Int!
+  subtotal: Float!
+  unitPrice: Float!
+}
+
+input OrderPaginationInput {
+  limit: Int
+  offset: Int
+}
+
+type OrderStatistics {
+  cancelledOrders: Int!
+  deliveredOrders: Int!
+  pendingOrders: Int!
+  processingOrders: Int!
+  shippedOrders: Int!
+  totalOrders: Int!
+  totalRevenue: Float!
+}
+
+enum OrderStatus {
+  Cancelled
+  Delivered
+  Pending
+  Processing
+  Shipped
+}
+
+input PaginationInput {
+  limit: Int
+  offset: Int
+}
+
+type Query {
+  activityLog(id: String!): ActivityLog
+  activityLogs(filter: ActivityLogFilterInput, pagination: PaginationInput): [ActivityLog!]!
+  activitySummary: ActivitySummary!
+  cart(id: String!): Cart
+  cartByUserId(userId: String!): Cart
+  carts(pagination: PaginationInput): [Cart!]!
+  health: String!
+  isEmailAvailable(email: String!): Boolean!
+  me: User
+  order(id: String!): Order
+  orderStatistics(status: OrderStatus): OrderStatistics!
+  orders(pagination: OrderPaginationInput): [Order!]!
+  ordersByStatus(pagination: OrderPaginationInput, status: OrderStatus!): [Order!]!
+  ordersByUserId(pagination: OrderPaginationInput, userId: String!): [Order!]!
+  recentOrders(limit: Int): [Order!]!
+  time: String!
+  user(id: String!): User
+  userActivityStats(userId: String!): UserActivityStats!
+  userByEmail(email: String!): User
+  users(pagination: PaginationInput): [User!]!
+}
+
+input RemoveCartItemInput {
+  cartId: Int!
+  itemId: Int!
+}
+
+enum Severity {
+  Critical
+  Error
+  Info
+  Warning
+}
+
+type SeverityCount {
+  count: Int!
+  severity: Severity!
+}
+
+type ShippingAddress {
+  city: String!
+  country: String!
+  postalCode: String!
+  state: String!
+  street: String!
+}
+
+input ShippingAddressInput {
+  city: String!
+  country: String!
+  postalCode: String!
+  state: String!
+  street: String!
+}
+
+type TypeCount {
+  activityType: ActivityType!
+  count: Int!
+}
+
+input UpdateCartItemInput {
+  cartId: Int!
+  itemId: Int!
+  quantity: Int!
+}
+
+input UpdateOrderInput {
+  notes: String
+  shippingAddress: ShippingAddressInput
+  status: OrderStatus
+}
+
+input UpdateUserInput {
+  email: String
+  fullName: String
+  password: String
+  role: String
+}
+
+type User {
+  createdAt: DateTime!
+  displayName: String!
+  email: String!
+  fullName: String!
+  id: Int!
+  isAdmin: Boolean!
+  isManager: Boolean!
+  role: UserRole!
+  updatedAt: DateTime!
+}
+
+type UserActivityStats {
+  actionsBySeverity: [SeverityCount!]!
+  actionsByType: [TypeCount!]!
+  recentActivity: [ActivityLog!]!
+  totalActions: Int!
+  userId: Int!
+}
+
+input UserFilterInput {
+  createdAfter: DateTime
+  createdBefore: DateTime
+  email: String
+  isActive: Boolean
+  role: String
+}
+
+enum UserRole {
+  Admin
+  Customer
+  Manager
+}
+
+enum UserStatus {
+  Active
+  Inactive
+  Suspended
+}

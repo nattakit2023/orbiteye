@@ -15,6 +15,7 @@ interface ContentsProps {
   clickedResult?: any | null;
   apiResponse?: any;
   isFullWidth?: boolean;
+  // featurfeatureSidebarCollapsed: boolean;
 }
 
 const Contents: React.FC<ContentsProps> = (props) => {
@@ -51,8 +52,8 @@ const Contents: React.FC<ContentsProps> = (props) => {
       )}
 
       {/* Theme 1 */}
-      <Content 
-       style={{ 
+      <Content
+       style={{
          position: "relative",
          ...(props.isFullWidth ? { width: "100%" } : {})
        }}

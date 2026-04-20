@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+import { stacSearch, StacSearchInput } from "./graphql/stac";
 import type { ApiRequest, ApiResponse, ImageData } from "@/types/api";
 
 /**
@@ -358,12 +359,9 @@ export const fetcher = async ([url, requestData]: [
       const requestConfig = {
         method: "post",
         maxBodyLength: Infinity,
-        url:
-          "https://api-gateway.gistda.or.th/api/2.0/resources/stac/theos2-cuf/search" +
-          url,
+        url: "http://localhost:8080/api/stac/search",
         headers: {
-          "API-Key":
-            "aCgloe5LIZ1jCQjwQ4rrnYkNNekrugv7yhMiUAvjju4x7hFz4OeLAMyhMhLZVyjm",
+          // API key is now handled by the backend
           "Content-Type": "application/json",
         },
         data: JSON.stringify(requestData),
@@ -377,7 +375,7 @@ export const fetcher = async ([url, requestData]: [
       });
 
       // Make the API call using axios
-      const response = await axios.request<ApiResponse>(requestConfig);
+      const response = await axios.request<TransformedApiResponse>(requestConfig);
 
       console.log("API Response Status:", response.status);
       console.log("API Response Headers:", response.headers);
@@ -385,7 +383,8 @@ export const fetcher = async ([url, requestData]: [
       console.log("API Response:", response.data);
 
       // Transform STAC response to UI format
-      return transformStacResponse(response.data);
+      // Backend returns TransformedApiResponse directly
+      return response.data;
     } catch (error) {
       const axiosError = error as AxiosError;
 
@@ -611,7 +610,13 @@ export const mockAnalyzeShape = (
  */
 export const analyzeShape = async (
   requestData: ApiRequest,
-): Promise<TransformedApiResponse> => {
-  // Use real API endpoint - STAC search endpoint
-  return fetcher(["", requestData]);
+): Promise<any> => {
+  // Use GraphQL endpoint for STAC search
+  const input: StacSearchInput = {
+    bbox: requestData.bbox as number[],
+    datetime: requestData.datetime as string,
+    limit: requestData.limit as number,
+    collections: requestData.collections as string[],
+  };
+  return stacSearch(input);
 };
