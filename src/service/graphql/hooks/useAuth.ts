@@ -7,6 +7,27 @@ import type {
 } from "@/gql/graphql";
 
 // GraphQL Documents as raw strings
+const GOOGLE_LOGIN_MUTATION = `
+  mutation GoogleLogin($input: GoogleLoginInput!) {
+    googleLogin(input: $input) {
+      token
+      refreshToken
+      expiresIn
+      tokenType
+      user {
+        id
+        email
+        fullName
+        displayName
+        role
+        isAdmin
+        isManager
+      }
+    }
+  }
+`;
+
+// GraphQL Documents as raw strings
 const LOGIN_MUTATION = `
   mutation Login($input: LoginInput!) {
     login(input: $input) {
@@ -73,6 +94,11 @@ const LOGOUT_MUTATION = `
   }
 `;
 
+// Type for Google login mutation response
+interface GoogleLoginResponse {
+  googleLogin?: AuthResponse;
+}
+
 // Type for login mutation response
 interface LoginResponse {
   login?: AuthResponse;
@@ -92,6 +118,45 @@ interface RefreshTokenResponse {
 interface LogoutResponse {
   logout: boolean;
 }
+
+// Google Login hook
+export const useGoogleLogin = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (variables: { google_id: string; email: string; first_name: string }) => {
+      return await graphqlClient.request<GoogleLoginResponse>(GOOGLE_LOGIN_MUTATION, {
+        input: {
+          google_id: variables.google_id,
+          email: variables.email,
+          first_name: variables.first_name,
+        },
+      });
+    },
+    onSuccess: (data) => {
+      if (data.googleLogin?.token) {
+        // Store the JWT token
+        localStorage.setItem("token", data.googleLogin.token);
+
+        // Store user info
+        if (data.googleLogin.user) {
+          localStorage.setItem(
+            "user",
+            JSON.stringify(data.googleLogin.user)
+          );
+        }
+
+        // Invalidate all queries to refresh with authenticated state
+        queryClient.invalidateQueries();
+      }
+    },
+    onError: (error) => {
+      console.error("Google login failed:", error);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    },
+  });
+};
 
 // Login hook
 export const useLogin = () => {

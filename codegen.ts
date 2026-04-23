@@ -2,7 +2,10 @@ import { CodegenConfig } from "@graphql-codegen/cli";
 
 const config: CodegenConfig = {
 	schema: "src/gql/schema.graphql",
-	documents: ["src/**/*.{ts,tsx}"],
+	documents: [
+		"src/**/*.{ts,tsx}",
+		"!src/**/stac.ts",
+	],
 	generates: {
 		"src/gql/": {
 			preset: "client",
@@ -12,6 +15,7 @@ const config: CodegenConfig = {
 		},
 	},
 	ignoreNoDocuments: true,
+	allowPartialOutputs: true,
 };
 
 export default config;

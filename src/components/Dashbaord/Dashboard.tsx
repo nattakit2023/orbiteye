@@ -440,7 +440,7 @@ const Dashboard: React.FC = () => {
               onClick={() => {
                 localStorage.removeItem("userToken");
                 localStorage.removeItem("userData");
-                navigate("/login");
+                navigate("/authentication/login");
                 setMenuOpen(false);
               }}
               onMouseEnter={(e) =>

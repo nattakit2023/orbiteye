@@ -130,6 +130,12 @@ input CreateUserInput {
 
 scalar DateTime
 
+input GoogleLoginInput {
+  email: String!
+  first_name: String!
+  google_id: String!
+}
+
 input LoginInput {
   email: String!
   password: String!
@@ -145,6 +151,7 @@ type Mutation {
   createOrder(input: CreateOrderInput!): Order!
   createUser(input: CreateUserInput!): User!
   deleteUser(id: String!): Boolean!
+  googleLogin(input: GoogleLoginInput!): AuthResponse!
   login(input: LoginInput!): AuthResponse!
   logout: Boolean!
   refreshToken(refreshToken: String!): AuthResponse!

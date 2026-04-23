@@ -151,6 +151,12 @@ export type CreateUserInput = {
   role?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type GoogleLoginInput = {
+  email: Scalars['String']['input'];
+  first_name: Scalars['String']['input'];
+  google_id: Scalars['String']['input'];
+};
+
 export type LoginInput = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
@@ -167,6 +173,7 @@ export type Mutation = {
   createOrder: Order;
   createUser: User;
   deleteUser: Scalars['Boolean']['output'];
+  googleLogin: AuthResponse;
   login: AuthResponse;
   logout: Scalars['Boolean']['output'];
   refreshToken: AuthResponse;
@@ -223,6 +230,11 @@ export type MutationCreateUserArgs = {
 
 export type MutationDeleteUserArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type MutationGoogleLoginArgs = {
+  input: GoogleLoginInput;
 };
 
 

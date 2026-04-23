@@ -1,9 +1,9 @@
 import { GraphQLClient } from "graphql-request";
 
 // GraphQL endpoint from environment or default to localhost
-const endpoint = import.meta.env.VITE_GRAPHQL_ENDPOINT
-	? `${import.meta.env.VITE_GRAPHQL_ENDPOINT}/graphql`
-	: "http://localhost:8080/graphql";
+const endpoint = import.meta.env.VITE_API_URL
+	? `${import.meta.env.VITE_API_URL}/graphql`
+	: "http://localhost:4321/graphql";
 
 // Create GraphQL client with dynamic auth headers
 export const graphqlClient = new GraphQLClient(endpoint, {
