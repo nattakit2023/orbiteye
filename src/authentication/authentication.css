@@ -20,13 +20,19 @@ input {
     background-color: transparent;
 }
 
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
 .background_image {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: 100vh;
-    background-color: #090B10;
-    position: fixed;
-    top: 0;
-    left: 0;
+    height: 100%;
+    object-fit: cover;
 }
 
 .front_background_80 {
