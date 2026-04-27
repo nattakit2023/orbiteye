@@ -208,7 +208,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {/* Content Wrapper with padding */}
         <div
           style={{
-            padding: collapsed ? "0" : "15px 20px",
+            padding: collapsed ? "0" : "20px 15px",
             transition: "padding 0.5s ease-in-out, opacity 0.5s ease-in-out",
             height: "100%",
             display: "flex",

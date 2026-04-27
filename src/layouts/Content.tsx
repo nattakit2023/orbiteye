@@ -1,5 +1,6 @@
+/// <reference types="react" />
 import React from "react";
-import { Layout, Button } from "antd";
+import { Layout, Button, Select } from "antd";
 import { Outlet } from "react-router-dom";
 import { MenuOutlined } from "@ant-design/icons";
 
@@ -15,48 +16,98 @@ interface ContentsProps {
   clickedResult?: any | null;
   apiResponse?: any;
   isFullWidth?: boolean;
-  // featurfeatureSidebarCollapsed: boolean;
+  featureSidebarOpen?: boolean;
+  setFeatureSidebarOpen?: (open: boolean) => void;
 }
 
 const Contents: React.FC<ContentsProps> = (props) => {
+  const [archLive, setArchLive] = React.useState<string>("live");
+
   return (
     <>
-      {/* Open Toggle Button - Shows in Dashboard when sidebar is closed and not full width */}
-      {props.sidebarCollapsed && !props.isFullWidth && (
-        <Button
-          type="text"
-          icon={<MenuOutlined style={{ color: "white", fontSize: "14px" }} />}
-          onClick={() => props.setSidebarCollapsed(false)}
-          style={{
-            position: "absolute",
-            left: "20px",
-            top: "20px",
-            zIndex: 1000,
-            backgroundColor: "#293653",
-            borderRadius: "50%",
-            padding: "12px 8px",
-            boxShadow: "2px 0 8px rgba(0,0,0,0.3)",
-            transition: "background-color 0.2s",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.backgroundColor = "#3a4a6c";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.backgroundColor = "#293653";
-          }}
-          title="Open Sidebar"
-        />
-      )}
+      {/* Left Side Controls - Toggle Button + Arch/Live Select */}
+      <div
+        style={{
+          position: "fixed",
+          left: "20px",
+          top: "20px",
+          zIndex: 999,
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
+        {/* Open Left Sidebar Toggle Button */}
+        {props.sidebarCollapsed && !props.isFullWidth && (
+          <Button
+            type="text"
+            icon={<MenuOutlined style={{ color: "white", fontSize: "14px" }} />}
+            onClick={() => props.setSidebarCollapsed(true)}
+            style={{
+              backgroundColor: "#293653",
+              borderRadius: "8px",
+              padding: "10px 12px",
+              boxShadow: "2px 0 8px rgba(0,0,0,0.3)",
+              transition: "background-color 0.2s",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.backgroundColor = "#3a4a6c";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.backgroundColor = "#293653";
+            }}
+            title="Open Sidebar"
+          />
+        )}
 
-      {/* Theme 1 */}
+        {/* Open Feature Sidebar Toggle Button */}
+        {props.isFullWidth && props.featureSidebarOpen === false && props.setFeatureSidebarOpen && (
+          <Button
+            type="text"
+            icon={<MenuOutlined style={{ color: "white", fontSize: "14px" }} />}
+            onClick={() => props.setFeatureSidebarOpen?.(true)}
+            style={{
+              backgroundColor: "#293653",
+              borderRadius: "8px",
+              padding: "10px 12px",
+              boxShadow: "2px 0 8px rgba(0,0,0,0.3)",
+              transition: "background-color 0.2s",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.backgroundColor = "#3a4a6c";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.backgroundColor = "#293653";
+            }}
+            title="Open Feature Sidebar"
+          />
+        )}
+
+        {/* Arch/Live Select */}
+        <Select
+          value={archLive}
+          onChange={setArchLive}
+          style={{ width: 120 }}
+          options={[
+            { value: "arch", label: "Archive" },
+            { value: "live", label: "Live" },
+          ]}
+        />
+      </div>
+
+      {/* Main Content */}
       <Content
-       style={{
-         position: "relative",
-         ...(props.isFullWidth ? { width: "100%" } : {})
-       }}
+        style={{
+          position: "relative",
+          ...(props.isFullWidth ? { width: "100%" } : {}),
+          transition: "width 0.3s ease-in-out",
+        }}
       >
         <Outlet
           context={{
@@ -69,31 +120,6 @@ const Contents: React.FC<ContentsProps> = (props) => {
           }}
         />
       </Content>
-
-      {/* Theme 2 */}
-      {/* <Content
-        style={{
-          padding: "0 48px",
-        }}
-      >
-        <Layout
-          style={{
-            margin: "16px 0",
-            padding: "24px 0",
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
-          }}
-        >
-          <Content
-            style={{
-              padding: "0 24px",
-              minHeight: 280,
-            }}
-          >
-            <Outlet />
-          </Content>
-        </Layout>
-      </Content> */}
     </>
   );
 };

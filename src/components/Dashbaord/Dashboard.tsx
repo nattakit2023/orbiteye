@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import Avatar from "antd/es/avatar";
-import { Spin, message } from "antd";
+import { Spin, message, Input } from "antd";
 import {
   HomeOutlined,
   EyeOutlined,
@@ -12,6 +12,7 @@ import {
   LogoutOutlined,
   CopyOutlined,
   LeftOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import "@/styles/dashboard.css";
@@ -142,76 +143,137 @@ const Dashboard: React.FC = () => {
 
   return (
     <div style={{ width: "100%", height: "100vh", position: "relative" }}>
-      {/* Top Right Controls */}
+      {/* Top Header Bar */}
       <div
         style={{
           position: "absolute",
           top: "20px",
+          left: "20px",
           right: "20px",
           zIndex: 1000,
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
           alignItems: "center",
-          gap: "10px",
+          justifyContent: "space-between",
+          gap: "16px",
         }}
       >
-        {/* Avatar Toggle Button */}
-        <button
-          ref={avatarButtonRef}
-          onClick={() => setMenuOpen(!menuOpen)}
+        {/* Center: Search Bar */}
+        <Input
+          placeholder="Search..."
+          prefix={<SearchOutlined style={{ color: "rgba(255,255,255,0.5)" }} />}
           style={{
-            width: "50px",
-            height: "50px",
-            borderRadius: "50%",
-            border: menuOpen ? "3px solid #1890ff" : "2px solid transparent",
-            backgroundColor: "transparent",
-            padding: 0,
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            display: "flex",
-            alignItems: "center",
+            backgroundColor: "#293653",
+            border: "none",
+            color: "#FFFFFF",
+            height: "40px",
+            flex: 1,
+            maxWidth: "400px",
           }}
-        >
-          <Avatar
-            src={userProfile.avatar}
-            size={46}
-            style={{ backgroundColor: "#1890ff" }}
-          />
-        </button>
+        />
 
-        {/* Right Sidebar Toggle Button - Shows when sidebar is closed */}
-        {rightSidebarCollapsed && (
+        {/* Right: Orders and Carts Buttons */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <button
-            onClick={() => setRightSidebarCollapsed(false)}
+            onClick={() => navigate("/feature/order")}
             style={{
-              width: "30px",
-              height: "30px",
-              borderRadius: "50%",
+              height: "40px",
+              padding: "0 16px",
               backgroundColor: "#293653",
-              // border: "2px solid #1890ff",
+              border: "none",
+              borderRadius: "8px",
+              color: "#FFFFFF",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "14px",
+              transition: "background-color 0.2s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3a4a6c")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#293653")}
+          >
+            <ShoppingOutlined /> Orders
+          </button>
+          <button
+            onClick={() => navigate("/feature/cart")}
+            style={{
+              height: "40px",
+              padding: "0 16px",
+              backgroundColor: "#293653",
+              border: "none",
+              borderRadius: "8px",
+              color: "#FFFFFF",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "14px",
+              transition: "background-color 0.2s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3a4a6c")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#293653")}
+          >
+            <ShoppingCartOutlined /> Cart
+          </button>
+
+          {/* Avatar Toggle Button */}
+          <button
+            ref={avatarButtonRef}
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={{
+              width: "46px",
+              height: "46px",
+              borderRadius: "50%",
+              border: menuOpen ? "3px solid #1890ff" : "2px solid transparent",
+              backgroundColor: "transparent",
               padding: 0,
               cursor: "pointer",
               transition: "all 0.2s ease",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
             }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor =
-                "#3a4a6c";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor =
-                "#293653";
-            }}
-            title="Open Right Sidebar"
           >
-            <LeftOutlined style={{ color: "white", fontSize: "12px" }} />
+            <Avatar
+              src={userProfile.avatar}
+              size={42}
+              style={{ backgroundColor: "#1890ff" }}
+            />
           </button>
-        )}
+
+          {/* Right Sidebar Toggle Button - Shows when sidebar is closed */}
+          {rightSidebarCollapsed && (
+            <button
+              onClick={() => setRightSidebarCollapsed(false)}
+              style={{
+                width: "30px",
+                height: "30px",
+                borderRadius: "50%",
+                backgroundColor: "#293653",
+                padding: 0,
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.backgroundColor =
+                  "#3a4a6c";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.backgroundColor =
+                  "#293653";
+              }}
+              title="Open Right Sidebar"
+            >
+              <LeftOutlined style={{ color: "white", fontSize: "12px" }} />
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Right Sidebar Toggle Button - Shows when sidebar is closed */}
 
       {/* Menu Popup */}
       {menuOpen && (

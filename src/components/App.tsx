@@ -19,9 +19,9 @@ interface ResultData {
 
 const App: React.FC = () => {
   const location = useLocation();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true);
-  const [featureSidebarCollapsed, setFeatureSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
+  const [featureSidebarOpen, setFeatureSidebarOpen] = useState(false);
 
   // Mock user profile data for feature sidebar
   const [userProfile] = useState({
@@ -67,59 +67,120 @@ const App: React.FC = () => {
   // Handle result click from RightSidebar
   const handleResultClick = (result: ResultData) => {
     console.log("App: Result clicked:", result);
-
-    // Set clickedResult to trigger zoom to the feature
     setClickedResult(result);
-
-    // Clear clickedResult after a short delay (500ms) to allow zoom animation to complete
-    // This ensures the red highlighting doesn't persist too long
     setTimeout(() => {
       setClickedResult(null);
     }, 500);
   };
 
+  // Close all sidebars
+  const closeAllSidebars = () => {
+    setSidebarOpen(false);
+    setRightSidebarOpen(false);
+    setFeatureSidebarOpen(false);
+  };
+
   return (
     <div className="w-full h-full">
-      {/* Style 1 */}
-      <Layout style={{ background: "#030416", height: "100vh" }}>
-        {!isFeatureRoute ? (
-          <Sidebar
-            collapsed={sidebarCollapsed}
-            onCollapse={setSidebarCollapsed}
-            onOpenRightSidebar={() => setRightSidebarCollapsed(false)}
-            onAnalyze={handleAnalyze}
-          />
-        ) : (
-          <FeatureSidebar
-            collapsed={featureSidebarCollapsed}
-            onCollapse={setFeatureSidebarCollapsed}
-            userProfile={userProfile}
-          />
+      <Layout style={{ background: "#030416", height: "100vh", position: "relative" }}>
+        {/* Left Sidebar - Floating Popup */}
+        {!isFeatureRoute && sidebarOpen && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: 300,
+              height: "100vh",
+              zIndex: 1001,
+              boxShadow: "4px 0 16px rgba(0,0,0,0.3)",
+            }}
+          >
+            <Sidebar
+              collapsed={false}
+              onCollapse={() => setSidebarOpen(false)}
+              onOpenRightSidebar={() => setRightSidebarOpen(true)}
+              onAnalyze={handleAnalyze}
+            />
+          </div>
         )}
 
+        {/* Feature Sidebar - Floating Popup */}
+        {isFeatureRoute && featureSidebarOpen && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: 280,
+              height: "100vh",
+              zIndex: 1001,
+              boxShadow: "4px 0 16px rgba(0,0,0,0.3)",
+            }}
+          >
+            <FeatureSidebar
+              collapsed={false}
+              onCollapse={() => setFeatureSidebarOpen(false)}
+              userProfile={userProfile}
+            />
+          </div>
+        )}
+
+        {/* Right Sidebar - Floating Popup */}
+        {rightSidebarOpen && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              right: 0,
+              width: 380,
+              height: "100vh",
+              zIndex: 1001,
+              boxShadow: "-4px 0 16px rgba(0,0,0,0.3)",
+            }}
+          >
+            <RightSidebar
+              collapsed={false}
+              onCollapse={() => setRightSidebarOpen(false)}
+              apiResponse={apiResponse}
+              isLoading={isLoading}
+              error={error}
+              onResultHover={setHoveredResult}
+              onResultClick={handleResultClick}
+            />
+          </div>
+        )}
+
+        {/* Main Content - Full Width */}
         <Content
           data={location.pathname.slice(1)}
-          sidebarCollapsed={sidebarCollapsed}
-          setSidebarCollapsed={setSidebarCollapsed}
-          rightSidebarCollapsed={rightSidebarCollapsed}
-          setRightSidebarCollapsed={setRightSidebarCollapsed}
+          sidebarCollapsed={!sidebarOpen}
+          setSidebarCollapsed={setSidebarOpen}
+          rightSidebarCollapsed={!rightSidebarOpen}
+          setRightSidebarCollapsed={setRightSidebarOpen}
           hoveredResult={hoveredResult}
           clickedResult={clickedResult}
           apiResponse={apiResponse}
           isFullWidth={isFeatureRoute}
-          // featureSidebarCollapsed={featureSidebarCollapsed}
-          // setFeatureSidebarCollapsed={setFeatureSidebarCollapsed}
+          featureSidebarOpen={featureSidebarOpen}
+          setFeatureSidebarOpen={setFeatureSidebarOpen}
         />
 
-        <RightSidebar
-          collapsed={rightSidebarCollapsed}
-          onCollapse={setRightSidebarCollapsed}
-          apiResponse={apiResponse}
-          isLoading={isLoading}
-          error={error}
-          onResultHover={setHoveredResult}
-          onResultClick={handleResultClick}
-        />
+        {/* Overlay backdrop when sidebars are open */}
+        {(sidebarOpen || rightSidebarOpen || featureSidebarOpen) && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              zIndex: 1000,
+            }}
+            onClick={closeAllSidebars}
+          />
+        )}
       </Layout>
     </div>
   );
