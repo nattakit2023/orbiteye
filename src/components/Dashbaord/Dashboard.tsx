@@ -1,20 +1,7 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
-import Avatar from "antd/es/avatar";
-import { Spin, message, Input } from "antd";
-import {
-  HomeOutlined,
-  EyeOutlined,
-  UserOutlined,
-  StarOutlined,
-  ShoppingCartOutlined,
-  ShoppingOutlined,
-  LockOutlined,
-  LogoutOutlined,
-  CopyOutlined,
-  LeftOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
-import { useOutletContext, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, lazy, Suspense } from "react";
+import { Spin, message } from "antd";
+import { CopyOutlined } from "@ant-design/icons";
+import { useOutletContext } from "react-router-dom";
 import "@/styles/dashboard.css";
 
 // Lazy load the map component
@@ -29,8 +16,6 @@ interface DrawnShape {
 }
 
 interface OutletContext {
-  rightSidebarCollapsed: boolean;
-  setRightSidebarCollapsed: (collapsed: boolean) => void;
   hoveredResult?: any | null;
   clickedResult?: any | null;
   apiResponse?: any;
@@ -38,28 +23,15 @@ interface OutletContext {
 
 const Dashboard: React.FC = () => {
   const {
-    rightSidebarCollapsed,
-    setRightSidebarCollapsed,
     hoveredResult,
     clickedResult,
     apiResponse,
   } = useOutletContext<OutletContext>();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate();
   const [drawingMode, setDrawingMode] = useState<
     "circle" | "polygon" | "rectangle" | null
   >(null);
   const [drawnShapes, setDrawnShapes] = useState<DrawnShape[]>([]);
   const [copiedShapeId, setCopiedShapeId] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const avatarButtonRef = useRef<HTMLButtonElement>(null);
-
-  // User Profile Data
-  const userProfile = {
-    name: "John Doe",
-    role: "Administrator",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-  };
 
   // Sample marker data - replace with your actual data
   const markers: [number, number][] = [];
@@ -95,28 +67,6 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        menuRef.current &&
-        avatarButtonRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        !avatarButtonRef.current.contains(event.target as Node)
-      ) {
-        setMenuOpen(false);
-      }
-    };
-
-    if (menuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [menuOpen]);
-
   // Handle copying coordinates to clipboard
   const handleCopyCoordinates = (shape: DrawnShape) => {
     const coordsStr = shape.coordinates
@@ -142,382 +92,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
-      {/* Top Header Bar */}
-      <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          left: "20px",
-          right: "20px",
-          zIndex: 1000,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "16px",
-        }}
-      >
-        {/* Center: Search Bar */}
-        <Input
-          placeholder="Search..."
-          prefix={<SearchOutlined style={{ color: "rgba(255,255,255,0.5)" }} />}
-          style={{
-            backgroundColor: "#293653",
-            border: "none",
-            color: "#FFFFFF",
-            height: "40px",
-            flex: 1,
-            maxWidth: "400px",
-          }}
-        />
-
-        {/* Right: Orders and Carts Buttons */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <button
-            onClick={() => navigate("/feature/order")}
-            style={{
-              height: "40px",
-              padding: "0 16px",
-              backgroundColor: "#293653",
-              border: "none",
-              borderRadius: "8px",
-              color: "#FFFFFF",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "14px",
-              transition: "background-color 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3a4a6c")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#293653")}
-          >
-            <ShoppingOutlined /> Orders
-          </button>
-          <button
-            onClick={() => navigate("/feature/cart")}
-            style={{
-              height: "40px",
-              padding: "0 16px",
-              backgroundColor: "#293653",
-              border: "none",
-              borderRadius: "8px",
-              color: "#FFFFFF",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "14px",
-              transition: "background-color 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3a4a6c")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#293653")}
-          >
-            <ShoppingCartOutlined /> Cart
-          </button>
-
-          {/* Avatar Toggle Button */}
-          <button
-            ref={avatarButtonRef}
-            onClick={() => setMenuOpen(!menuOpen)}
-            style={{
-              width: "46px",
-              height: "46px",
-              borderRadius: "50%",
-              border: menuOpen ? "3px solid #1890ff" : "2px solid transparent",
-              backgroundColor: "transparent",
-              padding: 0,
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            <Avatar
-              src={userProfile.avatar}
-              size={42}
-              style={{ backgroundColor: "#1890ff" }}
-            />
-          </button>
-
-          {/* Right Sidebar Toggle Button - Shows when sidebar is closed */}
-          {rightSidebarCollapsed && (
-            <button
-              onClick={() => setRightSidebarCollapsed(false)}
-              style={{
-                width: "30px",
-                height: "30px",
-                borderRadius: "50%",
-                backgroundColor: "#293653",
-                padding: 0,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.backgroundColor =
-                  "#3a4a6c";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.backgroundColor =
-                  "#293653";
-              }}
-              title="Open Right Sidebar"
-            >
-              <LeftOutlined style={{ color: "white", fontSize: "12px" }} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Right Sidebar Toggle Button - Shows when sidebar is closed */}
-
-      {/* Menu Popup */}
-      {menuOpen && (
-        <div
-          ref={menuRef}
-          className="menu-popup"
-          style={{
-            position: "absolute",
-            top: "70px",
-            right: "20px",
-            zIndex: 1001,
-            backgroundColor: "#030416",
-            border: "1px solid #404d63",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-            minWidth: "220px",
-          }}
-        >
-          {/* Profile Section */}
-          <div
-            style={{
-              padding: "16px",
-              borderBottom: "1px solid #404d63",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-            }}
-          >
-            <Avatar
-              src={userProfile.avatar}
-              size={48}
-              style={{ backgroundColor: "#1890ff" }}
-            />
-            <div style={{ flex: 1 }}>
-              <p
-                style={{
-                  margin: "0 0 4px 0",
-                  fontSize: "14px",
-                  color: "#FFFFFF",
-                  fontWeight: 600,
-                }}
-              >
-                {userProfile.name}
-              </p>
-              <p style={{ margin: 0, fontSize: "12px", color: "#999999" }}>
-                {userProfile.role}
-              </p>
-            </div>
-          </div>
-
-          <div style={{ padding: "12px 0" }}>
-            <div
-              style={{
-                padding: "10px 16px",
-                cursor: "pointer",
-                color: "#FFFFFF",
-                transition: "background-color 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-              onClick={() => {
-                navigate("/dashboard");
-                setMenuOpen(false);
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#364762")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <HomeOutlined /> Home
-            </div>
-            <div
-              style={{
-                padding: "10px 16px",
-                cursor: "pointer",
-                color: "#FFFFFF",
-                transition: "background-color 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-              onClick={() => {
-                navigate("/feature/overview");
-                setMenuOpen(false);
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#364762")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <EyeOutlined /> Overview
-            </div>
-            <div
-              style={{
-                padding: "10px 16px",
-                cursor: "pointer",
-                color: "#FFFFFF",
-                transition: "background-color 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-              onClick={() => {
-                navigate("/feature/profile");
-                setMenuOpen(false);
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#364762")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <UserOutlined /> Profile
-            </div>
-            <div
-              style={{
-                padding: "10px 16px",
-                cursor: "pointer",
-                color: "#FFFFFF",
-                transition: "background-color 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-              onClick={() => {
-                navigate("/feature/favorites");
-                setMenuOpen(false);
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#364762")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <StarOutlined /> Favorites
-            </div>
-            <div
-              style={{
-                padding: "10px 16px",
-                cursor: "pointer",
-                color: "#FFFFFF",
-                transition: "background-color 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-              onClick={() => {
-                navigate("/feature/cart");
-                setMenuOpen(false);
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#364762")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <ShoppingCartOutlined /> Cart
-            </div>
-            <div
-              style={{
-                padding: "10px 16px",
-                cursor: "pointer",
-                color: "#FFFFFF",
-                transition: "background-color 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-              onClick={() => {
-                navigate("/feature/order");
-                setMenuOpen(false);
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#364762")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <ShoppingOutlined /> Order
-            </div>
-            <div
-              style={{
-                padding: "10px 16px",
-                cursor: "pointer",
-                color: "#FFFFFF",
-                transition: "background-color 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-              onClick={() => {
-                navigate("/feature/change-password");
-                setMenuOpen(false);
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#364762")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <LockOutlined /> Change Password
-            </div>
-            <div
-              style={{
-                padding: "10px 16px",
-                cursor: "pointer",
-                color: "#FF6B6B",
-                transition: "background-color 0.2s",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                borderTop: "1px solid #404d63",
-                marginTop: "8px",
-                paddingTop: "12px",
-              }}
-              onClick={() => {
-                localStorage.removeItem("userToken");
-                localStorage.removeItem("userData");
-                navigate("/authentication/login");
-                setMenuOpen(false);
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#364762")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <LogoutOutlined /> Logout
-            </div>
-          </div>
-        </div>
-      )}
-
+    <>
       {/* Lazy loaded MapComponent with Suspense fallback */}
       <Suspense
         fallback={
@@ -657,7 +232,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

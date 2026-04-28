@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Content from "../layouts/Content";
+import Header from "../layouts/Header";
 import Sidebar from "../layouts/Sidebar";
 import RightSidebar from "../layouts/RightSidebar";
 import FeatureSidebar from "../layouts/FeatureSidebar";
@@ -19,7 +20,8 @@ interface ResultData {
 
 const App: React.FC = () => {
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isFeatureRoute = location.pathname.startsWith("/feature/");
+  const [sidebarOpen, setSidebarOpen] = useState(!isFeatureRoute);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [featureSidebarOpen, setFeatureSidebarOpen] = useState(false);
 
@@ -29,9 +31,6 @@ const App: React.FC = () => {
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
     role: "Premium User",
   });
-
-  // Check if current route is a feature page
-  const isFeatureRoute = location.pathname.startsWith('/feature/');
 
   // State for API request
   const [apiRequest, setApiRequest] = useState<ApiRequest | null>(null);
@@ -82,16 +81,19 @@ const App: React.FC = () => {
 
   return (
     <div className="w-full h-full">
-      <Layout style={{ background: "#030416", height: "100vh", position: "relative" }}>
+      <Layout
+        style={{ background: "#030415", height: "100vh", position: "relative" }}
+      >
         {/* Left Sidebar - Floating Popup */}
         {!isFeatureRoute && sidebarOpen && (
           <div
             style={{
               position: "fixed",
-              top: 0,
-              left: 0,
-              width: 300,
-              height: "100vh",
+              top: 10,
+              left: 10,
+              bottom: 100,
+              width: 320,
+              height: "100%",
               zIndex: 1001,
               boxShadow: "4px 0 16px rgba(0,0,0,0.3)",
             }}
@@ -151,6 +153,17 @@ const App: React.FC = () => {
           </div>
         )}
 
+        {/* Header - Floating Overlay */}
+        <Header
+          userProfile={userProfile}
+          rightSidebarCollapsed={!rightSidebarOpen}
+          onToggleRightSidebar={() => setRightSidebarOpen(true)}
+          sidebarCollapsed={!sidebarOpen}
+          isFullWidth={isFeatureRoute}
+          onOpenSidebar={() => setSidebarOpen(true)}
+          onOpenFeatureSidebar={() => setFeatureSidebarOpen(true)}
+        />
+
         {/* Main Content - Full Width */}
         <Content
           data={location.pathname.slice(1)}
@@ -165,22 +178,6 @@ const App: React.FC = () => {
           featureSidebarOpen={featureSidebarOpen}
           setFeatureSidebarOpen={setFeatureSidebarOpen}
         />
-
-        {/* Overlay backdrop when sidebars are open */}
-        {(sidebarOpen || rightSidebarOpen || featureSidebarOpen) && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "rgba(0,0,0,0.5)",
-              zIndex: 1000,
-            }}
-            onClick={closeAllSidebars}
-          />
-        )}
       </Layout>
     </div>
   );
