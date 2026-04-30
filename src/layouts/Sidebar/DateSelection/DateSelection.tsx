@@ -1,67 +1,108 @@
-import React from "react";
+import React, { useState } from "react";
 import DatePicker from "antd/es/date-picker";
 import { CalendarOutlined } from "@ant-design/icons";
-
-const { RangePicker } = DatePicker;
+import dayjs, { Dayjs } from "dayjs";
 
 interface DateSelectionProps {
   onDateChange?: (dates: unknown, dateStrings: [string, string]) => void;
 }
 
 const DateSelection: React.FC<DateSelectionProps> = ({ onDateChange }) => {
+  const [startDate, setStartDate] = useState<Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(null);
+
+  const handleStartDateChange = (date: Dayjs | null) => {
+    setStartDate(date);
+    if (date && endDate) {
+      onDateChange?.(
+        [date, endDate],
+        [date.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD")],
+      );
+    }
+  };
+
+  const handleEndDateChange = (date: Dayjs | null) => {
+    setEndDate(date);
+    if (startDate && date) {
+      onDateChange?.(
+        [startDate, date],
+        [startDate.format("YYYY-MM-DD"), date.format("YYYY-MM-DD")],
+      );
+    }
+  };
+
   return (
     <div className="w-full">
       <div
         style={{
           marginBottom: "1rem",
-          color: "#FFFFFF",
+          color: "#E0E0E0",
           fontSize: "14px",
           fontWeight: 600,
         }}
       >
-        <CalendarOutlined style={{ marginRight: "8px", color: "#1890ff" }} />
-        Select Date Range
+        <CalendarOutlined style={{ marginRight: "8px", color: "#E0E0E0" }} />
+        Acquistion date
       </div>
 
-      <RangePicker
-        style={{
-          width: "100%",
-          backgroundColor: "#293653",
-          border: "1px solid #404d63",
-          borderRadius: "8px",
-          padding: "8px 12px",
-        }}
-        placeholder={["Start Date", "End Date"]}
-        onChange={(dates: unknown, dateStrings: [string, string]) => {
-          console.log("Date selected:", dates, dateStrings);
-          onDateChange?.(dates, dateStrings);
-        }}
-        format="YYYY-MM-DD"
-        size="large"
-        className="dark"
-        popupClassName="dark-calendar"
-      />
+      <div style={{ display: "flex", gap: "20px" }}>
+        <div>
+          <DatePicker
+            value={startDate}
+            onChange={handleStartDateChange}
+            style={{
+              width: "100%",
+              backgroundColor: "transparent",
+              border: "1px solid #404d63",
+              borderRadius: "8px",
+              color: "#E0E0E0",
+            }}
+            placeholder="Pick a date"
+            format="YYYY-MM-DD"
+            size="middle"
+            className="dark"
+            popupClassName="dark-calendar"
+          />
+        </div>
+
+        <div>
+          <DatePicker
+            value={endDate}
+            onChange={handleEndDateChange}
+            style={{
+              width: "100%",
+              backgroundColor: "transparent",
+              border: "1px solid #404d63",
+              borderRadius: "8px",
+              color: "#E0E0E0",
+            }}
+            placeholder="Pick a date"
+            format="YYYY-MM-DD"
+            size="middle"
+            className="dark"
+            popupClassName="dark-calendar"
+          />
+        </div>
+      </div>
 
       <style>{`
         .dark .ant-picker {
-          background-color: #293653 !important;
+          background-color: transparent !important;
           border-color: #404d63 !important;
-          color: #FFFFFF !important;
+          color: #E0E0E0 !important;
         }
         .dark .ant-picker-input > input {
-          color: #FFFFFF !important;
+          color: #E0E0E0 !important;
           background-color: transparent !important;
         }
         .dark .ant-picker-input > input::placeholder {
-          color: #999999 !important;
+          color: #626972 !important;
         }
-        .dark .ant-picker:hover,
-        .dark .ant-picker-focused {
-          border-color: #1890ff !important;
-          box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+        .dark .ant-picker-suffix {
+          color: #E0E0E0 !important;
         }
         .dark svg{
-          color: #FFFFFF !important;
+          color: #E0E0E0 !important;
         }
         .dark-calendar .ant-picker-panel-container {
           background-color: #1a2332 !important;

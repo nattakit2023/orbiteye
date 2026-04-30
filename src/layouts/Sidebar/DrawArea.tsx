@@ -153,7 +153,9 @@ const DrawArea: React.FC = () => {
           marginBottom: `${BUTTON_GAP}px`,
         }}
       >
-        <div>Draw area of interest (AOI)</div>
+        <div style={{ color: "#9EA5B0", fontSize: "12px" }}>
+          AREA OF INTEREST
+        </div>
         <Tooltip title="Clear All Drawings">
           <div
             onClick={handleClear}

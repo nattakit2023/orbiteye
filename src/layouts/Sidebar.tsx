@@ -6,7 +6,7 @@ import Divider from "antd/es/divider";
 
 import Row from "antd/es/row";
 import Button from "antd/es/button";
-import { LeftOutlined } from "@ant-design/icons";
+import { LeftOutlined, SearchOutlined } from "@ant-design/icons";
 import DrawArea from "@/layouts/Sidebar/DrawArea";
 import Resolution from "@/layouts/Sidebar/Resolution";
 import DateSelection from "@/layouts/Sidebar/DateSelection/DateSelection";
@@ -157,20 +157,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         display: "flex",
         flexDirection: "column",
         flexShrink: 0,
-        padding: "10px",
         borderRadius: "12px",
+        overflow: "hidden",
       }}
     >
-      {/* Header Section with logo and close button */}
-      <div
-        style={{
-          // padding: "20px 16px 16px 16px",
-          background:
-            "linear-gradient(180deg, rgba(3,4,21,0.95) 0%, rgba(3,4,21,0) 100%)",
-          flex: "0 0 auto",
-        }}
-      >
-        <Flex vertical gap={12}>
+      {/* Scrollable Content Section */}
+      <div style={{ flex: 1, overflow: "auto", paddingBottom: "10px" }}>
+        <Flex vertical gap={12} style={{ padding: "10px 10px 0 10px" }}>
           <Row justify="space-between" align="middle">
             <Col span={16}>
               <Image
@@ -196,18 +189,44 @@ const Sidebar: React.FC<SidebarProps> = ({
           </Row>
           <Row>
             <Col span={24}>
-              <Divider style={{borderColor:"#626972"}}/>
+              <Divider style={{ borderColor: "#626972", margin: "10px 0" }} />
+            </Col>
+          </Row>
+
+          <Row>
+            <Col span={24} style={{ color: "#9EA5B0", fontSize: "12px" }}>
+              ARCHIVE SEARCH
+            </Col>
+            <Col
+              span={24}
+              style={{ color: "#E0E0E0", fontSize: "20px", fontWeight: "bold" }}
+            >
+              Browser historical
             </Col>
           </Row>
           <Row>
             <Col span={24}>
-              <Divider style={{borderColor:"#626972"}}/>
+              <Divider style={{ borderColor: "#626972", margin: "10px 0" }} />
             </Col>
           </Row>
           <Row>
+            <DrawArea />
+          </Row>
+          <Row>
             <Col span={24}>
-              <Divider style={{borderColor:"#626972"}}/>
+              <Divider style={{ borderColor: "#626972", margin: "10px 0" }} />
             </Col>
+          </Row>
+          <Row style={{ marginBottom: "10px" }}>
+            <Col span={24}>
+              <DateSelection onDateChange={handleDateChange} />
+            </Col>
+          </Row>
+          <Row style={{ marginBottom: "10px" }}>
+            <CloudQuality />
+          </Row>
+          <Row style={{ marginBottom: "10px" }}>
+            <Satellite onSelectItem={handleSelectSatellite} selectedItems={selectedSatellites} />
           </Row>
         </Flex>
       </div>
@@ -215,39 +234,31 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Bottom Section - Show Result Button */}
       <div
         style={{
-          flex: "0 0 auto",
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
           padding: "16px",
-          background:
-            "linear-gradient(0deg, rgba(3,4,21,0.95) 0%, rgba(3,4,21,0) 100%)",
+          borderTop: "1px solid #161940",
+          backgroundColor: "#090b22",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
         <Button
           type="primary"
-          disabled={
-            selectedItems.length === 0 &&
-            selectedSatellites.length === 0 &&
-            selectedCloudQualities.length === 0 &&
-            !selectedDates
-          }
+          size="large"
           onClick={handleShowResult}
           style={{
-            width: "100%",
+            width: "70%",
             height: "44px",
-            backgroundColor:
-              selectedItems.length === 0 &&
-              selectedSatellites.length === 0 &&
-              selectedCloudQualities.length === 0 &&
-              !selectedDates
-                ? "rgba(80,80,80,0.5)"
-                : "#1890ff",
-            border: "none",
-            borderRadius: "8px",
-            fontSize: "15px",
-            fontWeight: 600,
-            color: "#FFFFFF",
+            backgroundColor: "#22253C",
+            color: "#626972",
           }}
         >
-          Show Result
+          <SearchOutlined />
+          Search archive
         </Button>
       </div>
     </div>

@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
+import Slider from "antd/es/slider";
+import { CloudOutlined } from "@ant-design/icons";
 
 interface CloudQualityProps {
   onSelectItem?: (itemId: string) => void;
@@ -9,51 +11,79 @@ const CloudQuality: React.FC<CloudQualityProps> = ({
   onSelectItem,
   selectedItems = [],
 }) => {
-  const cloudQualityData = [
-    { id: "1", label: "Clear", value: "0-10%" },
-    { id: "2", label: "Low", value: "10-30%" },
-    { id: "3", label: "Medium", value: "30-50%" },
-    { id: "4", label: "High", value: "50%+" },
-  ];
+  const [sliderValue, setSliderValue] = useState<number>(50);
+
+  const handleSliderChange = (value: number) => {
+    setSliderValue(value);
+    onSelectItem?.(String(value));
+  };
 
   return (
     <div className="w-full">
       <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}
+        style={{
+          color: "#E0E0E0",
+          fontSize: "14px",
+          fontWeight: "600",
+          marginBottom: "8px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
       >
-        {cloudQualityData.map((item) => (
-          <div
-            key={item.id}
-            onClick={() => onSelectItem?.(item.id)}
-            style={{
-              padding: "12px",
-              borderRadius: "8px",
-              border: selectedItems.includes(item.id)
-                ? "2px solid #1890ff"
-                : "1px solid #d9d9d9",
-              backgroundColor: selectedItems.includes(item.id)
-                ? "rgba(24, 144, 255, 0.1)"
-                : "transparent",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-          >
-            <p
-              style={{
-                margin: "0 0 4px 0",
-                fontWeight: 600,
-                color: "#FFFFFF",
-                fontSize: "14px",
-              }}
-            >
-              {item.label}
-            </p>
-            <p style={{ margin: 0, color: "#999999", fontSize: "12px" }}>
-              {item.value}
-            </p>
-          </div>
-        ))}
+        <div style={{ display: "flex", gap: "8px" }}>
+          <CloudOutlined style={{ color: "#E0E0E0" }} />
+          Cloud Cover Threshold
+        </div>
+        <span
+          style={{
+            color: "#A2C0FF",
+            fontSize: "14px",
+            minWidth: "45px",
+            textAlign: "right",
+          }}
+        >
+          {sliderValue}%
+        </span>
       </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <Slider
+          min={0}
+          max={100}
+          step={10}
+          value={sliderValue}
+          onChange={handleSliderChange}
+          style={{
+            flex: 1,
+            color: "#E0E0E0",
+          }}
+          styles={{
+            track: { backgroundColor: "#1890ff" },
+            rail: { backgroundColor: "#404d63" },
+            handle: { borderColor: "#1890ff", backgroundColor: "#1890ff" },
+          }}
+        />
+      </div>
+
+      <style>{`
+        .ant-slider .ant-slider-track {
+          background-color: #1890ff !important;
+        }
+        .ant-slider .ant-slider-rail {
+          background-color: #404d63 !important;
+        }
+        .ant-slider .ant-slider-handle {
+          border-color: #1890ff !important;
+          background-color: #1890ff !important;
+        }
+        .ant-slider:hover .ant-slider-track {
+          background-color: #40a9ff !important;
+        }
+        .ant-slider:hover .ant-slider-handle {
+          border-color: #40a9ff !important;
+        }
+      `}</style>
     </div>
   );
 };
