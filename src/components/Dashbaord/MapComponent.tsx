@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MapContainer, TileLayer, useMap, ZoomControl } from "react-leaflet";
+import { MapContainer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Card from "antd/es/card";
@@ -1038,12 +1038,245 @@ function FeatureZoomHandler({ clickedResult }: FeatureZoomHandlerProps) {
   return null;
 }
 
+// TileLayer control using Leaflet's L.tileLayer()
+const TileLayerControl: React.FC<{
+  activeLayer: string;
+}> = ({ activeLayer }) => {
+  const map = useMap();
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
+
+  useEffect(() => {
+    // Define tile layers
+    const tileLayers = {
+      Satellite: L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        { attribution: "Tiles &copy; Esri", maxZoom: 19 }
+      ),
+      Streets: L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        { attribution: "&copy; OpenStreetMap contributors", maxZoom: 19 }
+      ),
+      Terrain: L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+        { attribution: "Tiles &copy; Esri", maxZoom: 16 }
+      ),
+    };
+
+    // Add initial layer
+    tileLayerRef.current = tileLayers[activeLayer as keyof typeof tileLayers];
+    tileLayerRef.current.addTo(map);
+
+    // Update layer when activeLayer changes
+    const interval = setInterval(() => {
+      if (tileLayerRef.current) {
+        const currentLayerName = Object.keys(tileLayers).find(
+          (key) => tileLayers[key as keyof typeof tileLayers] === tileLayerRef.current
+        );
+        if (currentLayerName !== activeLayer) {
+          tileLayerRef.current.remove();
+          tileLayerRef.current = tileLayers[activeLayer as keyof typeof tileLayers];
+          tileLayerRef.current.addTo(map);
+        }
+      }
+    }, 100);
+
+    return () => {
+      clearInterval(interval);
+      if (tileLayerRef.current) {
+        tileLayerRef.current.remove();
+      }
+    };
+  }, [map, activeLayer]);
+
+  return null;
+};
+
+// Combined control - Base Layer, Zoom In, Zoom Out, Fullscreen - all in one column
+const BaseLayerControl: React.FC<{
+  activeLayer: string;
+  onLayerChange: (layer: string) => void;
+  rightSidebarCollapsed?: boolean;
+}> = ({ activeLayer, onLayerChange, rightSidebarCollapsed = true }) => {
+  const map = useMap();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = () => {
+    const container = map.getContainer();
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  const containerStyle: React.CSSProperties = {
+    position: "absolute",
+    bottom: "10px",
+    right: rightSidebarCollapsed ? "10px" : "325px",
+    zIndex: 1001,
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  };
+  const mergedBarStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    background: "#030415",
+    borderRadius: "4px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+    overflow: "hidden",
+  };
+
+  const btnStyle: React.CSSProperties = {
+    width: "34px",
+    height: "34px",
+    border: "none",
+    background: "#030415",
+    color: "#E0E0E0",
+    cursor: "pointer",
+    fontSize: "16px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
+  const dividerStyle: React.CSSProperties = {
+    width: "1px",
+    background: "#E0E0E0",
+  };
+
+  const dropdownStyle: React.CSSProperties = {
+      position: "absolute",
+      bottom: "0",
+      right: "100%",
+      background: "#030415",
+      borderRadius: "4px",
+      boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+      minWidth: "100px",
+      overflow: "hidden",
+      marginLeft: "4px",
+    };
+
+  const baseLayerBtnStyle: React.CSSProperties = {
+    ...btnStyle,
+    background: "#030415",
+    borderRadius: "4px",
+    boxShadow: "0 1px 5px rgba(0,0,0,0.4)",
+  };
+
+  return (
+    <div className="leaflet-control" style={containerStyle}>
+      <div style={{ position: "relative" }}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          title="Map Layers"
+          style={baseLayerBtnStyle}
+        >
+          🗺️
+        </button>
+        {isOpen && (
+                  <div ref={dropdownRef} style={dropdownStyle}>
+            {["Satellite", "Streets", "Terrain"].map((layerName) => (
+              <div
+                key={layerName}
+                onClick={() => {
+                  onLayerChange(layerName);
+                  setIsOpen(false);
+                }}
+                style={{
+                  padding: "8px 12px",
+                  cursor: "pointer",
+                  background: activeLayer === layerName ? "#1a1a2e" : "#030415",
+                  color: "#E0E0E0",
+                  fontWeight: activeLayer === layerName ? "600" : "400",
+                  fontSize: "13px",
+                }}
+                onMouseEnter={(e) => {
+                  if (activeLayer !== layerName) {
+                    e.currentTarget.style.background = "#1a1a2e";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeLayer !== layerName) {
+                    e.currentTarget.style.background = "#030415";
+                  }
+                }}
+              >
+                {layerName}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Merged bar: Zoom + Divider + Zoom - Divider + Fullscreen */}
+      <div style={mergedBarStyle}>
+        <button
+          onClick={() => map.zoomIn()}
+          title="Zoom In"
+          style={btnStyle}
+        >
+          +
+        </button>
+        <div style={dividerStyle} />
+        <button
+          onClick={() => map.zoomOut()}
+          title="Zoom Out"
+          style={btnStyle}
+        >
+          −
+        </button>
+        <div style={dividerStyle} />
+        <button
+          onClick={toggleFullscreen}
+          title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          style={btnStyle}
+        >
+          {isFullscreen ? "⊠" : "⛶"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 interface MapComponentProps {
   drawingMode: "circle" | "polygon" | "rectangle" | null;
   markers: [number, number][];
   hoveredResult?: any | null;
   clickedResult?: any | null;
   apiResponse?: any;
+  rightSidebarCollapsed?: boolean;
 }
 
 export const MapComponent: React.FC<MapComponentProps> = ({
@@ -1051,10 +1284,12 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   hoveredResult,
   clickedResult,
   apiResponse,
+  rightSidebarCollapsed = true,
 }) => {
   const [drawingMetrics, setDrawingMetrics] = useState<DrawingMetrics | null>(
     null,
   );
+  const [activeLayer, setActiveLayer] = useState<string>("Satellite");
 
   // Listen for drawing info events
   useEffect(() => {
@@ -1079,13 +1314,11 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       zoomControl={false}
       style={{ width: "100%", height: "100%" }}
     >
-      {/* Zoom Control positioned at bottom-right */}
-      <ZoomControl position="bottomright" />
-      {/* ESRI World Imagery for satellite view */}
-      <TileLayer
-        attribution="Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and GIS User Community"
-        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-      />
+      {/* TileLayer using Leaflet */}
+                  <TileLayerControl activeLayer={activeLayer} />
+
+                  {/* Combined Base Layer + Zoom + Fullscreen Control */}
+<BaseLayerControl activeLayer={activeLayer} onLayerChange={setActiveLayer} rightSidebarCollapsed={rightSidebarCollapsed} />
 
       {/* API Results Layer - Show all features */}
       {apiResponse?.data?.results && apiResponse.data.results.length > 0 && (

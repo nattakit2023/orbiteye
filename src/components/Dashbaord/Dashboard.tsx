@@ -19,6 +19,7 @@ interface OutletContext {
   hoveredResult?: any | null;
   clickedResult?: any | null;
   apiResponse?: any;
+  rightSidebarCollapsed?: boolean;
 }
 
 const Dashboard: React.FC = () => {
@@ -26,6 +27,7 @@ const Dashboard: React.FC = () => {
     hoveredResult,
     clickedResult,
     apiResponse,
+    rightSidebarCollapsed,
   } = useOutletContext<OutletContext>();
   const [drawingMode, setDrawingMode] = useState<
     "circle" | "polygon" | "rectangle" | null
@@ -95,28 +97,27 @@ const Dashboard: React.FC = () => {
     <>
       {/* Lazy loaded MapComponent with Suspense fallback */}
       <Suspense
-        fallback={
-          <Spin
-            size="large"
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          />
-        }
-      >
-        <MapComponent
-          drawingMode={drawingMode}
-          markers={markers}
-          hoveredResult={hoveredResult}
-          clickedResult={clickedResult}
-          apiResponse={apiResponse}
-        />
-      </Suspense>
-
-      {/* Drawn Shapes Display - Center Bottom Popup */}
+              fallback={
+                <Spin
+                  size="large"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                  }}
+                />
+              }
+            >
+              <MapComponent
+                drawingMode={drawingMode}
+                markers={markers}
+                hoveredResult={hoveredResult}
+                clickedResult={clickedResult}
+                apiResponse={apiResponse}
+                rightSidebarCollapsed={rightSidebarCollapsed}
+              />
+            </Suspense>
       {drawnShapes.length > 0 && (
         <div
           style={{

@@ -133,10 +133,10 @@ const App: React.FC = () => {
           <div
             style={{
               position: "fixed",
-              top: 0,
-              right: 0,
-              width: 380,
-              height: "100vh",
+              top: 70,
+              right: 15,
+              width: 300,
+              height: "100%",
               zIndex: 1001,
               boxShadow: "-4px 0 16px rgba(0,0,0,0.3)",
             }}

@@ -20,6 +20,7 @@ import {
   InfoCircleOutlined,
   EnvironmentOutlined,
   ShoppingOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import "@/styles/sidebar.css";
 import type { TransformedApiResponse } from "@/service/api";
@@ -94,7 +95,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         }
 
         .rightsidebar-scroll::-webkit-scrollbar-track {
-          background: #1a2332;
+          background: #22253C;
           border-radius: 3px;
         }
 
@@ -136,16 +137,16 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         theme="dark"
         className="dark"
         style={{
-          background: "#0f1419",
           padding: "0",
-          height: "100vh",
+          height: "calc(100vh - 80px)",
           color: "white",
+          background: "#03041590",
         }}
       >
         {/* Content Wrapper with padding */}
         <div
           style={{
-            padding: collapsed ? "0" : "15px 20px",
+            padding: collapsed ? "0" : "20px 20px 15px 20px",
             height: "100%",
             display: "flex",
             flexDirection: "column",
@@ -159,16 +160,36 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
               <Row
                 justify="center"
                 align="middle"
-                style={{ position: "relative" }}
+                style={{ position: "relative", alignItems: "start" }}
               >
+                <Col span={18}>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      color: "white",
+                    }}
+                  >
+                    Scene found
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: "500",
+                      color: "#9EA5B0",
+                    }}
+                  >
+                    Scene found
+                  </div>
+                </Col>
                 <Col
                   span={6}
-                  style={{ justifyContent: "start", display: "flex" }}
+                  style={{ justifyContent: "end", display: "flex" }}
                 >
                   <Button
                     type="text"
                     icon={
-                      <RightOutlined
+                      <CloseOutlined
                         style={{ color: "white", fontSize: "16px" }}
                       />
                     }
@@ -181,19 +202,6 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                     title="Close Sidebar"
                   />
                 </Col>
-                <Col span={12}>
-                  <div
-                    style={{
-                      fontSize: "18px",
-                      fontWeight: "600",
-                      color: "white",
-                      textAlign: "center",
-                    }}
-                  >
-                    Results
-                  </div>
-                </Col>
-                <Col span={6}></Col>
               </Row>
             </Flex>
           </div>
@@ -262,7 +270,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                     </span>
                   }
                   style={{
-                    backgroundColor: "#1a2332",
+                    backgroundColor: "#030415",
                     borderColor: "#293653",
                     marginBottom: "16px",
                   }}
@@ -339,7 +347,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                     </span>
                   }
                   style={{
-                    backgroundColor: "#1a2332",
+                    backgroundColor: "#030415",
                     borderColor: "#293653",
                     marginBottom: "16px",
                   }}
@@ -447,8 +455,8 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                           style={{
                             backgroundColor:
                               activeResultId === result.id
-                                ? "#0f1419"
-                                : "#1a2332",
+                                ? "#030415"
+                                : "#030415",
                             borderColor:
                               activeResultId === result.id
                                 ? "#ff4d4f"
@@ -471,8 +479,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                               marginBottom: "12px",
                               borderRadius: "8px",
                               overflow: "hidden",
-                              background:
-                                "linear-gradient(135deg, #1a2332 0%, #0f1419 100%)",
+                              background: "#030415",
                               border: "1px solid #293653",
                             }}
                           >
@@ -620,7 +627,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                           {/* Cloud Coverage Section */}
                           <div
                             style={{
-                              backgroundColor: "#0f1419",
+                              backgroundColor: "#030415",
                               padding: "12px",
                               borderRadius: "8px",
                               marginBottom: "10px",
@@ -715,7 +722,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                           {/* Quality Section */}
                           <div
                             style={{
-                              backgroundColor: "#0f1419",
+                              backgroundColor: "#030415",
                               padding: "12px",
                               borderRadius: "8px",
                               marginBottom: "10px",
@@ -971,7 +978,10 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                               const cartItem = {
                                 name: result.name,
                                 date: result.timestamp,
-                                cloud: typeof result.value === "number" ? result.value : 0,
+                                cloud:
+                                  typeof result.value === "number"
+                                    ? result.value
+                                    : 0,
                                 quality: "Excellent",
                                 imageUrl: result.imageData?.thumbnailUrl,
                                 price: 49.99,
@@ -979,17 +989,23 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                               };
                               addToCart(cartItem);
                             }}
-                            disabled={isInCart(`${result.name}-${result.timestamp}`)}
+                            disabled={isInCart(
+                              `${result.name}-${result.timestamp}`,
+                            )}
                             style={{
                               width: "100%",
                               marginTop: "12px",
                               height: "36px",
                               fontWeight: 500,
                               borderRadius: "6px",
-                              background: isInCart(`${result.name}-${result.timestamp}`)
+                              background: isInCart(
+                                `${result.name}-${result.timestamp}`,
+                              )
                                 ? "#52c41a"
                                 : undefined,
-                              borderColor: isInCart(`${result.name}-${result.timestamp}`)
+                              borderColor: isInCart(
+                                `${result.name}-${result.timestamp}`,
+                              )
                                 ? "#52c41a"
                                 : undefined,
                             }}

@@ -52,7 +52,7 @@ const Header: React.FC<HeaderProps> = (props) => {
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
   };
 
-  const [archLive, setArchLive] = useState<string>("live");
+  const [archLive, setArchLive] = useState<string>("arch");
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
