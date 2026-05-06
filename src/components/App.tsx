@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import Content from "../layouts/Content";
 import Header from "../layouts/Header";
 import Sidebar from "../layouts/Sidebar";
-import RightSidebar from "../layouts/RightSidebar";
+import RightSidebar, { RightSidebarMode } from "../layouts/RightSidebar";
 import FeatureSidebar from "../layouts/FeatureSidebar";
 import { Layout } from "antd";
 import { useLocation } from "react-router-dom";
 import useSWR from "swr";
 import "@/styles/globals.css";
 import type { ApiRequest } from "@/types/api";
-import { analyzeShape, TransformedApiResponse } from "@/service/api";
+import { analyzeShape, TransformedApiResponse } from "@/service/graphql/hooks/useStac";
 
 // Type definitions for result data
 interface ResultData {
@@ -23,6 +23,7 @@ const App: React.FC = () => {
   const isFeatureRoute = location.pathname.startsWith("/feature/");
   const [sidebarOpen, setSidebarOpen] = useState(!isFeatureRoute);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
+  const [rightSidebarMode, setRightSidebarMode] = useState<RightSidebarMode>("search");
   const [featureSidebarOpen, setFeatureSidebarOpen] = useState(false);
 
   // Mock user profile data for feature sidebar
@@ -72,11 +73,22 @@ const App: React.FC = () => {
     }, 500);
   };
 
-  // Close all sidebars
-  const closeAllSidebars = () => {
-    setSidebarOpen(false);
-    setRightSidebarOpen(false);
-    setFeatureSidebarOpen(false);
+  // Open right sidebar in search mode
+  const openRightSidebarSearch = () => {
+    setRightSidebarMode("search");
+    setRightSidebarOpen(true);
+  };
+
+  // Open right sidebar in cart mode
+  const openRightSidebarCart = () => {
+    setRightSidebarMode("cart");
+    setRightSidebarOpen(true);
+  };
+
+  // Open right sidebar in order mode
+  const openRightSidebarOrder = () => {
+    setRightSidebarMode("order");
+    setRightSidebarOpen(true);
   };
 
   return (
@@ -101,7 +113,7 @@ const App: React.FC = () => {
             <Sidebar
               collapsed={false}
               onCollapse={() => setSidebarOpen(false)}
-              onOpenRightSidebar={() => setRightSidebarOpen(true)}
+              onOpenRightSidebar={openRightSidebarSearch}
               onAnalyze={handleAnalyze}
             />
           </div>
@@ -144,6 +156,7 @@ const App: React.FC = () => {
             <RightSidebar
               collapsed={false}
               onCollapse={() => setRightSidebarOpen(false)}
+              mode={rightSidebarMode}
               apiResponse={apiResponse}
               isLoading={isLoading}
               error={error}
@@ -154,15 +167,25 @@ const App: React.FC = () => {
         )}
 
         {/* Header - Floating Overlay */}
-        <Header
-          userProfile={userProfile}
-          rightSidebarCollapsed={!rightSidebarOpen}
-          onToggleRightSidebar={() => setRightSidebarOpen(true)}
-          sidebarCollapsed={!sidebarOpen}
-          isFullWidth={isFeatureRoute}
-          onOpenSidebar={() => setSidebarOpen(true)}
-          onOpenFeatureSidebar={() => setFeatureSidebarOpen(true)}
-        />
+        {!isFeatureRoute && (
+          <Header
+            userProfile={userProfile}
+            rightSidebarCollapsed={!rightSidebarOpen}
+            onToggleRightSidebar={() => {
+              if (rightSidebarOpen) {
+                setRightSidebarOpen(false);
+              } else {
+                openRightSidebarSearch();
+              }
+            }}
+            onOpenCart={openRightSidebarCart}
+            onOpenOrder={openRightSidebarOrder}
+            sidebarCollapsed={!sidebarOpen}
+            isFullWidth={isFeatureRoute}
+            onOpenSidebar={() => setSidebarOpen(true)}
+            onOpenFeatureSidebar={() => setFeatureSidebarOpen(true)}
+          />
+        )}
 
         {/* Main Content - Full Width */}
         <Content

@@ -3,12 +3,10 @@ import Col from "antd/es/col";
 import Flex from "antd/es/flex";
 import Image from "antd/es/image";
 import Divider from "antd/es/divider";
-
 import Row from "antd/es/row";
 import Button from "antd/es/button";
 import { LeftOutlined, SearchOutlined } from "@ant-design/icons";
 import DrawArea from "@/layouts/Sidebar/DrawArea";
-import Resolution from "@/layouts/Sidebar/Resolution";
 import DateSelection from "@/layouts/Sidebar/DateSelection/DateSelection";
 import Satellite from "@/layouts/Sidebar/Satellite/Satellite";
 import CloudQuality from "@/layouts/Sidebar/CloudQuality/CloudQuality";
@@ -29,19 +27,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onOpenRightSidebar,
   onAnalyze,
 }) => {
-  const [selectedItems, setSelectedItems] = useState<string[]>([
-    "1",
-    "2",
-    "3",
-    "4",
-  ]);
   const [selectedSatellites, setSelectedSatellites] = useState<string[]>(["1"]);
-  const [selectedCloudQualities, setSelectedCloudQualities] = useState<
-    string[]
-  >([]);
-  const [selectedDates, setSelectedDates] = useState<[string, string] | null>(
-    null,
-  );
+  const [selectedDates, setSelectedDates] = useState<[string, string] | null>(null);
   const [currentShape, setCurrentShape] = useState<{
     type: "circle" | "polygon" | "rectangle" | null;
     coordinates: Array<[number, number]>;
@@ -116,24 +103,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     if (onOpenRightSidebar) onOpenRightSidebar();
   };
 
-  const handleSelectItem = (itemId: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId],
-    );
-  };
-
   const handleSelectSatellite = (itemId: string) => {
     setSelectedSatellites((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId],
-    );
-  };
-
-  const handleSelectCloudQuality = (itemId: string) => {
-    setSelectedCloudQualities((prev) =>
       prev.includes(itemId)
         ? prev.filter((id) => id !== itemId)
         : [...prev, itemId],

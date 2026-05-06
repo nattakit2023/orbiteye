@@ -1,12 +1,27 @@
-import { gql } from "graphql-request";
-import { graphqlClient } from "./client";
+import { useQuery } from "@tanstack/react-query";
+import { graphqlClient } from "../client";
+import type { ApiRequest } from "@/types/api";
 
 // STAC Search input type (must match backend)
 export interface StacSearchInput {
 	bbox?: number[];
+	intersects?: {
+		type: string;
+		coordinates?: number[][];
+		center?: [number, number];
+		radius?: number;
+	};
+	filter?: {
+		op: string;
+		args: unknown[];
+	};
 	datetime?: string;
 	limit?: number;
 	collections?: string[];
+	sortby?: string;
+	offset?: number;
+	cursor?: string;
+	stac_type?: string; // API type: "theos2_cuf", "theos2_ortho", "landsat", "sentinel"
 }
 
 // STAC response types
@@ -38,7 +53,7 @@ export interface AnalysisResult {
 	id: string;
 	name: string;
 	value: number;
-	coordinates?: any;
+	coordinates?: [number, number] | [number, number][];
 	timestamp: number;
 	imageData?: ImageAsset;
 }
@@ -57,7 +72,7 @@ export interface TransformedApiResponse {
 }
 
 // GraphQL query for STAC search
-export const STAC_SEARCH_QUERY = gql`
+const STAC_SEARCH_QUERY = `
 	query StacSearch($input: StacSearchInput!) {
 		stacSearch(input: $input) {
 			success
@@ -95,7 +110,21 @@ export const STAC_SEARCH_QUERY = gql`
 	}
 `;
 
-// Function to search STAC catalog via GraphQL
+// STAC Search hook
+export const useStacSearch = (input: StacSearchInput) => {
+	return useQuery({
+		queryKey: ["stac-search", input],
+		queryFn: async () => {
+			const response = await graphqlClient.request<{
+				stacSearch: TransformedApiResponse;
+			}>(STAC_SEARCH_QUERY, { input });
+
+			return response.stacSearch;
+		},
+	});
+};
+
+// Direct search function (for programmatic usage without hook)
 export const stacSearch = async (
 	input: StacSearchInput
 ): Promise<TransformedApiResponse> => {
@@ -112,4 +141,23 @@ export const stacSearch = async (
 			error: error instanceof Error ? error.message : "Unknown error",
 		};
 	}
+};
+
+/**
+ * Legacy analyzeShape function that converts ApiRequest to StacSearchInput
+ * Kept for backward compatibility with existing code
+ */
+export const analyzeShape = async (
+	requestData: ApiRequest,
+): Promise<TransformedApiResponse> => {
+	const input: StacSearchInput = {
+		intersects: requestData.intersects as StacSearchInput["intersects"],
+		filter: requestData.filter as StacSearchInput["filter"],
+		datetime: requestData.datetime as string,
+		limit: requestData.limit as number,
+		sortby: requestData.sortby as string | undefined,
+		offset: requestData.offset as number | undefined,
+		stac_type: requestData.stac_type as string | undefined,
+	};
+	return stacSearch(input);
 };

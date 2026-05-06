@@ -1,10 +1,5 @@
-/// <reference types="react" />
 import React, { useState, useRef, useEffect } from "react";
 import {
-  Breadcrumb,
-  Typography,
-  Flex,
-  Col,
   Input,
   Avatar as AntAvatar,
 } from "antd";
@@ -18,11 +13,8 @@ import {
   StarOutlined,
   LockOutlined,
   LogoutOutlined,
-  LeftOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-
-const { Title } = Typography;
 
 interface HeaderProps {
   title?: string;
@@ -34,6 +26,8 @@ interface HeaderProps {
   };
   rightSidebarCollapsed?: boolean;
   onToggleRightSidebar?: () => void;
+  onOpenCart?: () => void;
+  onOpenOrder?: () => void;
   sidebarCollapsed?: boolean;
   isFullWidth?: boolean;
   onOpenSidebar?: () => void;
@@ -221,7 +215,10 @@ const Header: React.FC<HeaderProps> = (props) => {
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <button
-            onClick={() => navigate("/feature/order")}
+            onClick={() => {
+              props.onOpenOrder?.();
+              setMenuOpen(false);
+            }}
             style={{
               height: "40px",
               padding: "0 16px",
@@ -242,11 +239,15 @@ const Header: React.FC<HeaderProps> = (props) => {
             onMouseLeave={(e) =>
               (e.currentTarget.style.backgroundColor = "#030415")
             }
+            title="Orders"
           >
             <ShoppingOutlined />
           </button>
           <button
-            onClick={() => navigate("/feature/cart")}
+            onClick={() => {
+              props.onOpenCart?.();
+              setMenuOpen(false);
+            }}
             style={{
               height: "40px",
               padding: "0 16px",
@@ -267,6 +268,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             onMouseLeave={(e) =>
               (e.currentTarget.style.backgroundColor = "#030415")
             }
+            title="Cart"
           >
             <ShoppingCartOutlined />
           </button>
@@ -294,7 +296,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             />
           </button>
 
-          {/*props.rightSidebarCollapsed && (
+          {/*{props.rightSidebarCollapsed && (
             <button
               onClick={props.onToggleRightSidebar}
               style={{
@@ -322,7 +324,7 @@ const Header: React.FC<HeaderProps> = (props) => {
             >
               <LeftOutlined style={{ color: "white", fontSize: "12px" }} />
             </button>
-          )*/}
+          )}*/}
         </div>
       </div>
 

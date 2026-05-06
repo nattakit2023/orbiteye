@@ -33,7 +33,7 @@ const CloudQuality: React.FC<CloudQualityProps> = ({
       >
         <div style={{ display: "flex", gap: "8px" }}>
           <CloudOutlined style={{ color: "#E0E0E0" }} />
-          Cloud Cover Threshold
+          Max Cloud Coverage
         </div>
         <span
           style={{

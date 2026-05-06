@@ -1,7 +1,7 @@
-/// <reference types="react" />
 import React from "react";
 import { Layout } from "antd";
 import { Outlet } from "react-router-dom";
+import { TransformedApiResponse } from "@/service/graphql/hooks/useStac";
 
 const { Content } = Layout;
 
@@ -11,9 +11,15 @@ interface ContentsProps {
   setSidebarCollapsed: (collapsed: boolean) => void;
   rightSidebarCollapsed: boolean;
   setRightSidebarCollapsed: (collapsed: boolean) => void;
-  hoveredResult?: any | null;
-  clickedResult?: any | null;
-  apiResponse?: any;
+  hoveredResult?: {
+    id: string;
+    coordinates?: [number, number] | [number, number][];
+  } | null;
+  clickedResult?: {
+    id: string;
+    coordinates?: [number, number] | [number, number][];
+  } | null;
+  apiResponse?: TransformedApiResponse | null;
   isFullWidth?: boolean;
   featureSidebarOpen?: boolean;
   setFeatureSidebarOpen?: (open: boolean) => void;
