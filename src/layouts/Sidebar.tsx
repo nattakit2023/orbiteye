@@ -65,7 +65,20 @@ const Sidebar: React.FC<SidebarProps> = ({
       currentShape.coordinates.push(firstCoordinate);
     }
 
+    // Map satellite IDs to STAC API types
+    const satelliteTypeMap: Record<string, string> = {
+      "1": "theos2",
+      "2": "sentinel",
+      "3": "landsat",
+    };
+
+    const stacType = selectedSatellites
+      .map((id) => satelliteTypeMap[id])
+      .filter((type): type is string => Boolean(type));
+
+
     const requestData: ApiRequest = {
+      ...(stacType.length > 0 && { stacType }),
       intersects: currentShape
         ? {
             type: currentShape.type === "circle" ? "Circle" : "Polygon",

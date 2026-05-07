@@ -1,13 +1,13 @@
 export interface STACSearchRequest {
-  intersects?: {
-    type: string;
-    coordinates?: number[][];
-    center?: [number, number];
-    radius?: number;
-  };
-  datetime?: string;
-  limit?: number;
-  collections?: string[];
+	stacType?: string[]; // API type(s): "theos2", "sentinel", "landsat"
+	intersects?: {
+		type: string;
+		coordinates?: number[][];
+		center?: [number, number];
+		radius?: number;
+	};
+	datetime?: string;
+	limit?: number;
 }
 
 export interface STACSearchResponse {

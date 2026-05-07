@@ -17,11 +17,10 @@ export interface StacSearchInput {
 	};
 	datetime?: string;
 	limit?: number;
-	collections?: string[];
 	sortby?: string;
 	offset?: number;
 	cursor?: string;
-	stac_type?: string; // API type: "theos2_cuf", "theos2_ortho", "landsat", "sentinel"
+	stacType?: string[]; // API type(s): "theos2", "sentinel", "landsat"
 }
 
 // STAC response types
@@ -157,7 +156,7 @@ export const analyzeShape = async (
 		limit: requestData.limit as number,
 		sortby: requestData.sortby as string | undefined,
 		offset: requestData.offset as number | undefined,
-		stac_type: requestData.stac_type as string | undefined,
+		stacType: requestData.stacType as string[] | undefined,
 	};
 	return stacSearch(input);
 };

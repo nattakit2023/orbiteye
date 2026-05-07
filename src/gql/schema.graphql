@@ -1,51 +1,132 @@
-type ActivityLog {
-  action: String!
-  activityType: ActivityType!
-  createdAt: DateTime!
-  entityId: String
-  entityType: String!
-  id: Int!
-  ipAddress: String
-  metadata: String
-  severity: Severity!
-  userAgent: String
-  userId: Int
+schema {
+  query: QueryRoot
+  mutation: MutationRoot
 }
 
-input ActivityLogFilterInput {
-  activityType: ActivityType
-  endDate: DateTime
-  entityType: String
-  severity: Severity
-  startDate: DateTime
-  userId: Int
+"""Activity Log GraphQL type"""
+type ActivityLog {
+  activityType: ActivityType!
+  actorId: Int
+  actorType: String
+  createdAt: DateTime!
+  description: String!
+  id: Int!
+  severity: Severity!
+  targetId: Int
+  targetType: String
+}
+
+type ActivityLogQuery {
+  """Get activity log by ID"""
+  activityLog(
+    """Activity Log ID"""
+    id: String!
+  ): ActivityLog
+
+  """Get all activity logs with optional pagination"""
+  activityLogs(limit: Int, offset: Int): [ActivityLog!]!
+
+  """Get activity logs by action type"""
+  activityLogsByAction(
+    """Action type"""
+    action: String!
+    limit: Int
+  ): [ActivityLog!]!
+
+  """Get activity logs within a date range"""
+  activityLogsByDateRange(
+    """End date"""
+    end: DateTime!
+    limit: Int
+
+    """Start date"""
+    start: DateTime!
+  ): [ActivityLog!]!
+
+  """Get activity logs for a specific entity"""
+  activityLogsByEntity(
+    """Entity ID"""
+    entityId: String!
+
+    """Entity type"""
+    entityType: String!
+    limit: Int
+  ): [ActivityLog!]!
+
+  """Get activity logs for a specific user"""
+  activityLogsByUser(
+    limit: Int
+
+    """User ID"""
+    userId: String!
+  ): [ActivityLog!]!
+
+  """Get activity summary for a time period"""
+  activitySummary(
+    """End date"""
+    end: DateTime!
+
+    """Start date"""
+    start: DateTime!
+  ): ActivitySummary
+
+  """Get critical activity logs"""
+  criticalLogs(limit: Int): [ActivityLog!]!
+
+  """Get error activity logs"""
+  errorLogs(limit: Int): [ActivityLog!]!
+
+  """Get recent activity logs"""
+  recentActivity(
+    """Number of logs to return"""
+    limit: Int
+  ): [ActivityLog!]!
+
+  """Get user activity statistics"""
+  userActivityStats(
+    """User ID"""
+    userId: String!
+  ): UserActivityStats
 }
 
 type ActivitySummary {
-  logsBySeverity: [SeverityCount!]!
-  logsByType: [TypeCount!]!
-  recentLogs: [ActivityLog!]!
-  totalLogs: Int!
+  criticalCount: Int!
+  errorCount: Int!
+  totalCount: Int!
 }
 
+"""Activity type enum - matches domain"""
 enum ActivityType {
-  AuthenticationFailed
-  CartConverted
-  CartCreated
-  CartUpdated
-  OrderCancelled
-  OrderCreated
-  OrderUpdated
-  PasswordChanged
-  ProfileUpdated
-  SystemError
-  UserCreated
-  UserDeleted
-  UserLogin
-  UserLogout
-  UserUpdated
+  API_ACCESS
+  CART_ABANDONED
+  CART_CONVERTED
+  CART_CREATED
+  CART_UPDATED
+  ERROR_OCCURRED
+  ORDER_CANCELLED
+  ORDER_CREATED
+  ORDER_DELIVERED
+  ORDER_PAID
+  ORDER_SHIPPED
+  ORDER_UPDATED
+  PASSWORD_CHANGE
+  PAYMENT_COMPLETED
+  PAYMENT_FAILED
+  PAYMENT_INITIATED
+  PRODUCT_ADDED
+  PRODUCT_REMOVED
+  PRODUCT_VIEWED
+  REFUND_COMPLETED
+  REFUND_INITIATED
+  SETTINGS_UPDATED
+  SYSTEM_EVENT
+  USER_LOGIN
+  USER_LOGOUT
+  USER_PROFILE_UPDATE
+  USER_REGISTRATION
 }
 
+"""Input for adding an item to cart"""
 input AddCartItemInput {
   cartId: Int!
   productId: Int!
@@ -53,74 +134,302 @@ input AddCartItemInput {
   unitPrice: Float!
 }
 
-type AuthResponse {
-  expiresIn: Int!
-  refreshToken: String
-  token: String!
-  tokenType: String!
-  user: User!
+type AnalysisResultGraphQL {
+  coordinates: JSON
+  id: String!
+  imageData: ImageAssetGraphQL
+  name: String!
+  timestamp: Int!
+  value: Float!
 }
 
+type AuthMutation {
+  """
+  Change password for authenticated user with current password verification
+  """
+  changePassword(
+    """Confirm new password"""
+    confirmPassword: String!
+
+    """Current password"""
+    currentPassword: String!
+
+    """New password"""
+    newPassword: String!
+  ): Boolean!
+
+  """Login with Google OAuth"""
+  googleLogin(
+    """Google OAuth credentials"""
+    input: GoogleLoginInput!
+  ): AuthResponse!
+
+  """Login with email and password"""
+  login(
+    """Login credentials"""
+    input: LoginInput!
+  ): AuthResponse!
+
+  """Logout (invalidate session)"""
+  logout: Boolean!
+
+  """Refresh access token using refresh token"""
+  refreshToken(
+    """Refresh token"""
+    refreshToken: String!
+  ): AuthResponse!
+
+  """Register a new user"""
+  register(
+    """Registration input"""
+    input: CreateUserInput!
+  ): AuthResponse!
+
+  """Request password reset email"""
+  requestPasswordReset(
+    """Email address"""
+    email: String!
+  ): Boolean!
+
+  """Reset password with token from email"""
+  resetPassword(
+    """Confirm new password"""
+    confirmPassword: String!
+
+    """New password"""
+    newPassword: String!
+
+    """Reset token from email"""
+    token: String!
+  ): AuthResponse!
+
+  """
+  Set password for authenticated user (e.g., Google user setting password after login)
+  """
+  setPassword(
+    """Confirm new password"""
+    confirmPassword: String!
+
+    """New password"""
+    newPassword: String!
+  ): Boolean!
+
+  """Verify email with verification token"""
+  verifyEmail(
+    """Verification token"""
+    token: String!
+  ): Boolean!
+}
+
+type AuthQuery {
+  """Check if a token is valid"""
+  isTokenValid(
+    """JWT token"""
+    token: String!
+  ): Boolean!
+
+  """Get current authenticated user"""
+  me: User
+
+  """Get token expiration info"""
+  tokenExpiration(
+    """JWT token"""
+    token: String!
+  ): Int!
+}
+
+"""Authentication response for login attempts"""
+type AuthResponse {
+  """Error message if authentication failed"""
+  error: String
+
+  """Token expiration time in seconds"""
+  expiresIn: Int!
+
+  """Refresh token for renewing access"""
+  refreshToken: String
+
+  """Whether authentication was successful"""
+  success: Boolean!
+
+  """Access token for API requests"""
+  token: String
+
+  """Token type (always "Bearer")"""
+  tokenType: String!
+
+  """Current user info if authenticated"""
+  user: User
+}
+
+type BoundingBoxGraphQL {
+  maxLat: Float!
+  maxLng: Float!
+  minLat: Float!
+  minLng: Float!
+}
+
+"""Input for cancelling an Order"""
+input CancelOrderInput {
+  reason: String
+}
+
+"""Cart GraphQL type"""
 type Cart {
   createdAt: DateTime!
   id: Int!
-  items: [CartItem!]!
+  sessionId: String
   status: CartStatus!
-  totalAmount: Float!
   updatedAt: DateTime!
-  userId: Int!
-}
-
-type CartItem {
-  id: Int!
-  productId: Int!
-  productName: String!
-  quantity: Int!
-  subtotal: Float!
-  unitPrice: Float!
-}
-
-enum CartStatus {
-  Abandoned
-  Active
-  Converted
-}
-
-input ConvertCartToOrderInput {
-  cartId: Int!
-  notes: String
-  shippingAddress: ShippingAddressInput!
-}
-
-input CreateActivityLogInput {
-  action: String!
-  activityType: ActivityType!
-  entityId: String
-  entityType: String!
-  ipAddress: String
-  metadata: String
-  severity: Severity!
-  userAgent: String
   userId: Int
 }
 
-input CreateCartInput {
-  userId: Int!
+type CartConversionResult {
+  message: String
+  orderId: Int
+  success: Boolean!
 }
 
+type CartMutation {
+  """Abandon a cart (mark as abandoned)"""
+  abandonCart(
+    """Cart ID"""
+    id: String!
+  ): Cart!
+
+  """Add an item to cart"""
+  addCartItem(
+    """Add item input"""
+    input: AddCartItemInput!
+  ): Cart!
+
+  """Clear all items from cart"""
+  clearCart(
+    """Cart ID"""
+    id: String!
+  ): Cart!
+
+  """Convert cart to order (checkout)"""
+  convertCartToOrder(
+    """Conversion input"""
+    input: ConvertCartToOrderInput!
+  ): CartConversionResult!
+
+  """Create a new cart (for user or guest)"""
+  createCart(
+    """Cart creation input"""
+    input: CreateCartInput!
+  ): Cart!
+
+  """Delete a cart permanently"""
+  deleteCart(
+    """Cart ID"""
+    id: String!
+  ): Boolean!
+
+  """Extend cart expiration (for guest carts)"""
+  extendCartExpiration(
+    """Hours to extend"""
+    hours: Int!
+
+    """Cart ID"""
+    id: String!
+  ): Cart!
+
+  """Merge guest cart into user cart"""
+  mergeCarts(
+    """Guest cart ID"""
+    guestCartId: String!
+
+    """User cart ID"""
+    userCartId: String!
+  ): Cart!
+
+  """Remove an item from cart"""
+  removeCartItem(
+    """Remove item input"""
+    input: RemoveCartItemInput!
+  ): Cart!
+
+  """Update cart item quantity"""
+  updateCartItem(
+    """Update item input"""
+    input: UpdateCartItemInput!
+  ): Cart!
+}
+
+type CartQuery {
+  """Get active cart for user"""
+  activeCart(
+    """User ID"""
+    userId: String!
+  ): Cart
+
+  """Get cart by ID"""
+  cart(
+    """Cart ID"""
+    id: String!
+  ): Cart
+
+  """Get cart by session ID (for guest carts)"""
+  cartBySession(
+    """Session ID"""
+    sessionId: String!
+  ): Cart
+
+  """Get all carts with optional pagination"""
+  carts(pagination: PaginationInput): [Cart!]!
+
+  """Get expired carts (for cleanup operations)"""
+  expiredCarts(pagination: PaginationInput): [Cart!]!
+
+  """Get user's cart history (converted carts)"""
+  myCartHistory(
+    """User ID"""
+    userId: String!
+  ): [CartSummary!]!
+}
+
+"""Cart status enum - matches domain"""
+enum CartStatus {
+  ABANDONED
+  ACTIVE
+  CONVERTED
+  EXPIRED
+}
+
+type CartSummary {
+  createdAt: DateTime!
+  id: Int!
+  itemCount: Int!
+  status: CartStatus!
+  totalAmount: Float!
+  userId: Int
+}
+
+"""Input for converting cart to order"""
+input ConvertCartToOrderInput {
+  billingAddress: String
+  cartId: Int!
+  shippingAddress: String
+}
+
+"""Input for creating a new Cart"""
+input CreateCartInput {
+  sessionId: String
+  userId: String
+}
+
+"""Input for creating a new Order"""
 input CreateOrderInput {
-  items: [CreateOrderItemInput!]!
+  billingAddress: ShippingAddressInput
+  items: [OrderItemInput!]!
   notes: String
   shippingAddress: ShippingAddressInput!
   userId: Int!
 }
 
-input CreateOrderItemInput {
-  productId: Int!
-  quantity: Int!
-  unitPrice: Float!
-}
-
+"""Input for creating a new User"""
 input CreateUserInput {
   email: String!
   fullName: String!
@@ -128,163 +437,421 @@ input CreateUserInput {
   role: String
 }
 
+"""
+Implement the DateTime<Utc> scalar
+
+The input/output is a string in RFC3339 format.
+"""
 scalar DateTime
 
+type FeatureStatisticsGraphQL {
+  boundingBox: BoundingBoxGraphQL!
+  pointCount: Int!
+}
+
+"""Filter expression input (STAC filter extension)"""
+input FilterExpressionInput {
+  """Arguments for the operation"""
+  args: [JSON!]!
+
+  """Logical operator: "and", "or", "eq", "lt", "lte", "gt", "gte", etc."""
+  op: String!
+}
+
+"""GeoJSON Geometry input"""
+input GeoJsonGeometryInput {
+  """Coordinates array"""
+  coordinates: JSON!
+
+  """Geometry type (Polygon, LineString, Point, etc.)"""
+  type: String!
+}
+
+"""Input for Google OAuth login/authentication"""
 input GoogleLoginInput {
   email: String!
   first_name: String!
   google_id: String!
 }
 
+type ImageAssetGraphQL {
+  downloadUrl: String
+  thumbnailUrl: String
+}
+
+"""A scalar that can represent any JSON value."""
+scalar JSON
+
+"""Input for user login/authentication"""
 input LoginInput {
   email: String!
   password: String!
 }
 
-type Mutation {
-  addCartItem(input: AddCartItemInput!): Cart!
-  cancelOrder(id: String!): Order!
-  changePassword(currentPassword: String!, id: String!, newPassword: String!): Boolean!
-  convertCartToOrder(input: ConvertCartToOrderInput!): Order!
-  createActivityLog(input: CreateActivityLogInput!): ActivityLog!
-  createCart(input: CreateCartInput!): Cart!
-  createOrder(input: CreateOrderInput!): Order!
-  createUser(input: CreateUserInput!): User!
-  deleteUser(id: String!): Boolean!
-  googleLogin(input: GoogleLoginInput!): AuthResponse!
-  login(input: LoginInput!): AuthResponse!
-  logout: Boolean!
-  refreshToken(refreshToken: String!): AuthResponse!
-  register(input: CreateUserInput!): AuthResponse!
-  removeCartItem(input: RemoveCartItemInput!): Cart!
-  resetPassword(email: String!): Boolean!
-  updateCartItem(input: UpdateCartItemInput!): Cart!
-  updateOrder(id: String!, input: UpdateOrderInput!): Order!
-  updateUser(id: String!, input: UpdateUserInput!): User!
+type MutationRoot {
+  addCartItem: CartMutation!
+  cancelOrder: OrderMutation!
+  changePassword: AuthMutation!
+  convertCartToOrder: CartMutation!
+
+  """Delegate to cart mutations"""
+  createCart: CartMutation!
+
+  """Delegate to order mutations"""
+  createOrder: OrderMutation!
+
+  """Delegate to user mutations"""
+  createUser: UserMutation!
+  deleteUser: UserMutation!
+
+  """Delegate to auth mutations"""
+  login: AuthMutation!
+  logout: AuthMutation!
+  refreshToken: AuthMutation!
+  register: AuthMutation!
+  removeCartItem: CartMutation!
+  requestPasswordReset: AuthMutation!
+  resetPassword: AuthMutation!
+  updateCartItem: CartMutation!
+  updateOrder: OrderMutation!
+  updateUser: UserMutation!
+  verifyEmail: AuthMutation!
 }
 
+"""Order GraphQL type"""
 type Order {
   createdAt: DateTime!
   id: Int!
   items: [OrderItem!]!
-  notes: String
-  shippingAddress: ShippingAddress
+  paidAt: DateTime
   status: OrderStatus!
   totalAmount: Float!
-  updatedAt: DateTime!
+  totalItems: Int!
   userId: Int!
 }
 
+"""Order item in the GraphQL schema"""
 type OrderItem {
+  createdAt: DateTime!
+  dataPointId: Int!
   id: Int!
+  itemName: String!
+  orderId: Int!
+  price: Float!
+}
+
+"""Order item input"""
+input OrderItemInput {
+  discount: Float
   productId: Int!
   productName: String!
   quantity: Int!
-  subtotal: Float!
   unitPrice: Float!
 }
 
+type OrderMutation {
+  """Add note to order"""
+  addOrderNote(
+    """Order ID"""
+    id: String!
+
+    """Note content"""
+    note: String!
+  ): Order!
+
+  """Add tracking information to an order"""
+  addTrackingInfo(
+    """Carrier"""
+    carrier: String
+
+    """Order ID"""
+    id: String!
+
+    """Tracking number"""
+    trackingNumber: String!
+  ): Order!
+
+  """Cancel an order"""
+  cancelOrder(
+    """Order ID"""
+    id: String!
+
+    """Cancellation input"""
+    input: CancelOrderInput!
+  ): Order!
+
+  """Confirm an order (transition from Pending to Confirmed)"""
+  confirmOrder(
+    """Order ID"""
+    id: String!
+  ): Order!
+
+  """Create a new order"""
+  createOrder(
+    """Order creation input"""
+    input: CreateOrderInput!
+  ): Order!
+
+  """Mark order as delivered"""
+  deliverOrder(
+    """Order ID"""
+    id: String!
+  ): Order!
+
+  """Mark order as paid"""
+  payOrder(
+    """Order ID"""
+    id: String!
+
+    """Payment ID"""
+    paymentId: String
+  ): Order!
+
+  """Process a refund"""
+  refundOrder(
+    """Refund amount"""
+    amount: Float
+
+    """Order ID"""
+    id: String!
+  ): Order!
+
+  """Ship an order"""
+  shipOrder(
+    """Carrier"""
+    carrier: String
+
+    """Order ID"""
+    id: String!
+
+    """Tracking number"""
+    trackingNumber: String
+  ): Order!
+
+  """Update an existing order"""
+  updateOrder(
+    """Order ID"""
+    id: String!
+
+    """Update input"""
+    input: UpdateOrderInput!
+  ): Order!
+}
+
+"""Pagination input for order queries"""
 input OrderPaginationInput {
   limit: Int
   offset: Int
+  userId: String
 }
 
-type OrderStatistics {
-  cancelledOrders: Int!
-  deliveredOrders: Int!
-  pendingOrders: Int!
-  processingOrders: Int!
-  shippedOrders: Int!
-  totalOrders: Int!
-  totalRevenue: Float!
+type OrderQuery {
+  """Get order by ID"""
+  order(
+    """Order ID"""
+    id: String!
+  ): Order
+
+  """Get order count by status"""
+  orderCountByStatus: [OrderStatusCount!]!
+
+  """Get order with all items by ID"""
+  orderWithItems(
+    """Order ID"""
+    id: String!
+  ): OrderWithItems
+
+  """Get all orders with optional pagination"""
+  orders(pagination: OrderPaginationInput): [Order!]!
+
+  """Get orders by status"""
+  ordersByStatus(
+    pagination: OrderPaginationInput
+
+    """Order status"""
+    status: OrderStatus!
+  ): [Order!]!
+
+  """Get orders by user ID"""
+  ordersByUser(
+    pagination: OrderPaginationInput
+
+    """User ID"""
+    userId: String!
+  ): [Order!]!
+
+  """Get recent orders (for dashboard)"""
+  recentOrders(
+    """Number of orders to return"""
+    limit: Int
+  ): [Order!]!
 }
 
+"""Order status enum - matches domain"""
 enum OrderStatus {
-  Cancelled
-  Delivered
-  Pending
-  Processing
-  Shipped
+  CANCELLED
+  COMPLETED
+  PAID
+  PENDING
+  PROCESSING
 }
 
+"""Order status count for statistics"""
+type OrderStatusCount {
+  count: Int!
+  status: OrderStatus!
+}
+
+type OrderWithItems {
+  items: [OrderItem!]!
+  order: Order!
+}
+
+"""Pagination input for list queries"""
 input PaginationInput {
   limit: Int
   offset: Int
 }
 
-type Query {
-  activityLog(id: String!): ActivityLog
-  activityLogs(filter: ActivityLogFilterInput, pagination: PaginationInput): [ActivityLog!]!
-  activitySummary: ActivitySummary!
-  cart(id: String!): Cart
-  cartByUserId(userId: String!): Cart
-  carts(pagination: PaginationInput): [Cart!]!
+type QueryRoot {
+  """Get a specific activity log by ID"""
+  activityLog: ActivityLogQuery!
+
+  """Delegate to activity log queries"""
+  activityLogs: ActivityLogQuery!
+
+  """Get a specific cart by ID"""
+  cart: CartQuery!
+
+  """Delegate to cart queries"""
+  carts: CartQuery!
+
+  """Health check query"""
   health: String!
-  isEmailAvailable(email: String!): Boolean!
-  me: User
-  order(id: String!): Order
-  orderStatistics(status: OrderStatus): OrderStatistics!
-  orders(pagination: OrderPaginationInput): [Order!]!
-  ordersByStatus(pagination: OrderPaginationInput, status: OrderStatus!): [Order!]!
-  ordersByUserId(pagination: OrderPaginationInput, userId: String!): [Order!]!
-  recentOrders(limit: Int): [Order!]!
+
+  """Auth queries"""
+  me: AuthQuery!
+
+  """Get a specific order by ID"""
+  order: OrderQuery!
+
+  """Delegate to order queries"""
+  orders: OrderQuery!
+
+  """STAC search query - directly returns result"""
+  stacSearch(input: StacSearchInput!): TransformedApiResponseGraphQL!
+
+  """Get current server time"""
   time: String!
-  user(id: String!): User
-  userActivityStats(userId: String!): UserActivityStats!
-  userByEmail(email: String!): User
-  users(pagination: PaginationInput): [User!]!
+
+  """Get a specific user by ID"""
+  user: UserQuery!
+
+  """Delegate to user queries"""
+  users: UserQuery!
+
+  """API version"""
+  version: String!
 }
 
+"""Input for removing an item from cart"""
 input RemoveCartItemInput {
   cartId: Int!
   itemId: Int!
 }
 
+"""Severity level enum - matches domain"""
 enum Severity {
-  Critical
-  Error
-  Info
-  Warning
+  CRITICAL
+  DEBUG
+  ERROR
+  INFO
+  WARNING
 }
 
-type SeverityCount {
-  count: Int!
-  severity: Severity!
+type ShapeAnalysisGraphQL {
+  area: Float!
+  centroid: [Float!]!
+  perimeter: Float!
+  type: String!
 }
 
-type ShippingAddress {
-  city: String!
-  country: String!
-  postalCode: String!
-  state: String!
-  street: String!
-}
-
+"""Shipping address input"""
 input ShippingAddressInput {
   city: String!
   country: String!
+  name: String!
+  phone: String
   postalCode: String!
   state: String!
   street: String!
 }
 
-type TypeCount {
-  activityType: ActivityType!
-  count: Int!
+"""STAC Search input - maps to STAC API search parameters"""
+input StacSearchInput {
+  """Bounding box [minX, minY, maxX, maxY]"""
+  bbox: [Float!]
+
+  """Collections to search"""
+  collections: [String!]
+
+  """Cursor for pagination"""
+  cursor: String
+
+  """DateTime filter (e.g., "2020-01-01T00:00:00Z/2020-12-31T23:59:59Z")"""
+  datetime: String
+
+  """Filter expression (STAC filter extension)"""
+  filter: FilterExpressionInput
+
+  """GeoJSON intersect geometry (Polygon, LineString, etc.)"""
+  intersects: GeoJsonGeometryInput
+
+  """Maximum number of results"""
+  limit: Int
+
+  """Pagination offset"""
+  offset: Int
+
+  """Sort field (e.g., "-datetime" for descending)"""
+  sortby: String
+
+  """
+  STAC API type(s) to use: "theos2", "sentinel", "landsat" (can pass multiple)
+  """
+  stacType: [String!]
 }
 
+type TransformedApiResponseGraphQL {
+  data: TransformedDataGraphQL
+  error: String
+  message: String
+  success: Boolean!
+}
+
+type TransformedDataGraphQL {
+  results: [AnalysisResultGraphQL!]!
+  shapeAnalysis: ShapeAnalysisGraphQL!
+  statistics: FeatureStatisticsGraphQL!
+}
+
+"""Input for updating a cart item"""
 input UpdateCartItemInput {
   cartId: Int!
   itemId: Int!
   quantity: Int!
 }
 
+"""Input for updating an existing Order"""
 input UpdateOrderInput {
+  billingAddress: ShippingAddressInput
   notes: String
   shippingAddress: ShippingAddressInput
-  status: OrderStatus
+  status: String
+  trackingNumber: String
 }
 
+"""Input for updating an existing User"""
 input UpdateUserInput {
   email: String
   fullName: String
@@ -292,42 +859,117 @@ input UpdateUserInput {
   role: String
 }
 
+"""
+UserGraphQL represents a User entity in the GraphQL schema
+
+SECURITY: This type deliberately excludes password_hash field.
+Passwords must NEVER be exposed through the API.
+"""
 type User {
+  """When the user was created"""
   createdAt: DateTime!
+
+  """Get a display-friendly representation of the user"""
   displayName: String!
+
+  """User email address"""
   email: String!
+
+  """User's full name"""
   fullName: String!
+
+  """Unique user identifier"""
   id: Int!
+
+  """Check if user is an admin"""
   isAdmin: Boolean!
+
+  """Check if user is a manager"""
   isManager: Boolean!
+
+  """User role"""
   role: UserRole!
+
+  """When the user was last updated"""
   updatedAt: DateTime!
 }
 
 type UserActivityStats {
-  actionsBySeverity: [SeverityCount!]!
-  actionsByType: [TypeCount!]!
-  recentActivity: [ActivityLog!]!
-  totalActions: Int!
+  lastActivity: DateTime
+  totalActivities: Int!
   userId: Int!
 }
 
-input UserFilterInput {
-  createdAfter: DateTime
-  createdBefore: DateTime
-  email: String
-  isActive: Boolean
-  role: String
+type UserMutation {
+  """Change user password"""
+  changePassword(
+    """Current password"""
+    currentPassword: String!
+
+    """User ID"""
+    id: String!
+
+    """New password"""
+    newPassword: String!
+  ): Boolean!
+
+  """Create a new user"""
+  createUser(
+    """User creation input"""
+    input: CreateUserInput!
+  ): User!
+
+  """Delete a user (soft delete by setting inactive)"""
+  deleteUser(
+    """User ID"""
+    id: String!
+  ): Boolean!
+
+  """Reset password (forgot password flow)"""
+  resetPassword(
+    """Email address"""
+    email: String!
+  ): Boolean!
+
+  """Update an existing user"""
+  updateUser(
+    """User ID"""
+    id: String!
+
+    """Update input"""
+    input: UpdateUserInput!
+  ): User!
 }
 
+type UserQuery {
+  """Check if email is available"""
+  isEmailAvailable(
+    """Email to check"""
+    email: String!
+  ): Boolean!
+
+  """Get current authenticated user"""
+  me: User
+
+  """Get user by ID"""
+  user(
+    """User ID"""
+    id: String!
+  ): User
+
+  """Get user by email"""
+  userByEmail(
+    """Email address"""
+    email: String!
+  ): User
+
+  """Get all users with optional pagination"""
+  users(pagination: PaginationInput): [User!]!
+}
+
+"""User role enum for GraphQL"""
 enum UserRole {
-  Admin
-  Customer
-  Manager
-}
-
-enum UserStatus {
-  Active
-  Inactive
-  Suspended
+  ADMIN
+  CUSTOMER
+  MANAGER
 }
