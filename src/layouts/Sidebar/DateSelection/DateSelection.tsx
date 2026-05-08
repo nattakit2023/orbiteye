@@ -14,9 +14,16 @@ const DateSelection: React.FC<DateSelectionProps> = ({ onDateChange }) => {
   const handleStartDateChange = (date: Dayjs | null) => {
     setStartDate(date);
     if (date && endDate) {
+      // Both dates selected → range from start to end
       onDateChange?.(
         [date, endDate],
         [date.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD")],
+      );
+    } else if (date) {
+      // Only start date → from start to present (use ".." for open end)
+      onDateChange?.(
+        [date, null],
+        [date.format("YYYY-MM-DD"), ".."],
       );
     }
   };
@@ -24,9 +31,16 @@ const DateSelection: React.FC<DateSelectionProps> = ({ onDateChange }) => {
   const handleEndDateChange = (date: Dayjs | null) => {
     setEndDate(date);
     if (startDate && date) {
+      // Both dates selected → range from start to end
       onDateChange?.(
         [startDate, date],
         [startDate.format("YYYY-MM-DD"), date.format("YYYY-MM-DD")],
+      );
+    } else if (date) {
+      // Only end date → from beginning to end (use ".." for open start)
+      onDateChange?.(
+        [null, date],
+        ["..", date.format("YYYY-MM-DD")],
       );
     }
   };

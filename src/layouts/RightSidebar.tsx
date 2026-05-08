@@ -41,19 +41,27 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   return (
     <>
       <style>{`
-        .rightsidebar-scroll::-webkit-scrollbar {
+        .ant-layout-sider-right .ant-layout-content {
+          scrollbar-width: thin;
+          scrollbar-color: #3b4045 #1c2128;
+        }
+        .ant-layout-sider-right ::-webkit-scrollbar {
           width: 6px;
         }
-        .rightsidebar-scroll::-webkit-scrollbar-track {
-          background: #22253C;
+        .ant-layout-sider-right ::-webkit-scrollbar-track {
+          background: #1c2128;
           border-radius: 3px;
         }
-        .rightsidebar-scroll::-webkit-scrollbar-thumb {
-          background: #293653;
+        .ant-layout-sider-right ::-webkit-scrollbar-thumb {
+          background: #3b4045;
           border-radius: 3px;
         }
-        .rightsidebar-scroll::-webkit-scrollbar-thumb:hover {
-          background: #1890ff;
+        .ant-layout-sider-right ::-webkit-scrollbar-thumb:hover {
+          background: #484f58;
+        }
+        .ant-layout-sider-right > .ant-layout-sider-children {
+          overflow-y: auto !important;
+          overflow-x: hidden;
         }
       `}</style>
 
@@ -63,28 +71,30 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
         onCollapse={onCollapse}
         breakpoint="lg"
         collapsedWidth="0"
-        width={300}
+        width={380}
         theme="dark"
-        className="dark"
+        className="ant-layout-sider-right"
         style={{
           padding: "0",
           height: "calc(100vh - 80px)",
           color: "white",
           background: "#03041590",
+          marginRight: "10px",
+          overflow: "hidden",
         }}
       >
         <div
           style={{
-            padding: collapsed ? "0" : "20px 20px 15px 20px",
+            padding: collapsed ? "0" : "15px 15px 15px 15px",
             height: "100%",
             display: "flex",
             flexDirection: "column",
             opacity: collapsed ? 0 : 1,
-            transition: "padding 0.5s ease-in-out, opacity 0.5s ease-in-out",
+            transition: "padding 0.2s ease, opacity 0.2s ease",
           }}
         >
           {/* Content based on mode */}
-          <div style={{ flex: "1 1 auto", overflow: "hidden" }}>
+          <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
             {mode === "search" && (
               <SearchArch
                 apiResponse={apiResponse}

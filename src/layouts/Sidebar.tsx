@@ -10,15 +10,32 @@ import DrawArea from "@/layouts/Sidebar/DrawArea";
 import DateSelection from "@/layouts/Sidebar/DateSelection/DateSelection";
 import Satellite from "@/layouts/Sidebar/Satellite/Satellite";
 import CloudQuality from "@/layouts/Sidebar/CloudQuality/CloudQuality";
+import DrawnShapeCard from "@/layouts/Sidebar/DrawnShapeCard";
 import "@/styles/sidebar.css";
 import image_logo from "@/public/assets/logo/orbiteye_white.png";
 import type { ApiRequest } from "@/types/api";
+
+interface ResultData {
+  id: string;
+  name?: string;
+  coordinates?: [number, number] | [number, number][];
+  timestamp?: number;
+}
 
 interface SidebarProps {
   collapsed: boolean;
   onCollapse: (collapsed: boolean) => void;
   onOpenRightSidebar?: () => void;
   onAnalyze?: (request: ApiRequest) => void;
+  selectedResult?: ResultData | null;
+  onClearSelectedResult?: () => void;
+  drawnShape?: {
+    type: "circle" | "polygon" | "rectangle";
+    coordinates: Array<[number, number]>;
+    radius?: number;
+    area?: number;
+  } | null;
+  onClearDrawnShape?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -26,6 +43,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onCollapse,
   onOpenRightSidebar,
   onAnalyze,
+  drawnShape,
+  onClearDrawnShape,
 }) => {
   const [selectedSatellites, setSelectedSatellites] = useState<string[]>(["1"]);
   const [selectedDates, setSelectedDates] = useState<[string, string] | null>(null);
@@ -97,9 +116,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }),
           }
         : { type: "Polygon", coordinates: [] },
-      datetime: selectedDates
-        ? `${selectedDates[0]}T00:00:00.000Z/${selectedDates[1]}T23:59:59.999Z`
-        : "../" + new Date().toISOString(),
+      datetime: (() => {
+        if (!selectedDates) return undefined;
+        const start = selectedDates[0];
+        const end = selectedDates[1];
+
+        if (start === "..") {
+          // Open start - from beginning to end date
+          return `../${end}T23:59:59.999Z`;
+        } else if (end === "..") {
+          // Open end - from start date to present
+          return `${start}T00:00:00.000Z/..`;
+        } else {
+          // Both dates specified
+          return `${start}T00:00:00.000Z/${end}T23:59:59.999Z`;
+        }
+      })(),
       filter: {
         op: "and",
         args: [
@@ -142,11 +174,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         flexDirection: "column",
         flexShrink: 0,
         borderRadius: "12px",
-        overflow: "hidden",
       }}
     >
       {/* Scrollable Content Section */}
-      <div style={{ flex: 1, overflow: "auto", paddingBottom: "10px" }}>
+      <div className="rightsidebar-scroll" style={{ flex: 1, overflowY: "auto", paddingBottom: "80px" }}>
         <Flex vertical gap={12} style={{ padding: "10px 10px 0 10px" }}>
           <Row justify="space-between" align="middle">
             <Col span={16}>
@@ -196,6 +227,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           <Row>
             <DrawArea />
           </Row>
+          {drawnShape && (
+            <Row>
+              <Col span={24}>
+                <DrawnShapeCard shape={drawnShape} onClose={onClearDrawnShape} />
+              </Col>
+            </Row>
+          )}
           <Row>
             <Col span={24}>
               <Divider style={{ borderColor: "#626972", margin: "10px 0" }} />

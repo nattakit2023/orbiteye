@@ -1,19 +1,10 @@
 import React, { useState, useEffect, lazy, Suspense } from "react";
-import { Spin, message } from "antd";
-import { CopyOutlined } from "@ant-design/icons";
+import { Spin } from "antd";
 import { useOutletContext } from "react-router-dom";
 import "@/styles/dashboard.css";
 
 // Lazy load the map component
 const MapComponent = lazy(() => import("./MapComponent"));
-
-interface DrawnShape {
-  type: "circle" | "polygon" | "rectangle";
-  coordinates: Array<[number, number]>;
-  radius?: number;
-  timestamp?: number;
-  id: string;
-}
 
 interface OutletContext {
   hoveredResult?: any | null;
@@ -23,17 +14,11 @@ interface OutletContext {
 }
 
 const Dashboard: React.FC = () => {
-  const {
-    hoveredResult,
-    clickedResult,
-    apiResponse,
-    rightSidebarCollapsed,
-  } = useOutletContext<OutletContext>();
+  const { hoveredResult, clickedResult, apiResponse, rightSidebarCollapsed } =
+    useOutletContext<OutletContext>();
   const [drawingMode, setDrawingMode] = useState<
     "circle" | "polygon" | "rectangle" | null
   >(null);
-  const [drawnShapes, setDrawnShapes] = useState<DrawnShape[]>([]);
-  const [copiedShapeId, setCopiedShapeId] = useState<string | null>(null);
 
   // Sample marker data - replace with your actual data
   const markers: [number, number][] = [];
@@ -46,15 +31,9 @@ const Dashboard: React.FC = () => {
 
     const handleClearDrawings = () => {
       setDrawingMode(null);
-      setDrawnShapes([]);
     };
 
-    const handleShapeCompleted = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      setDrawnShapes((prev) => [
-        ...prev,
-        { ...customEvent.detail, id: Date.now().toString() },
-      ]);
+    const handleShapeCompleted = () => {
       setDrawingMode(null);
     };
 
@@ -69,56 +48,33 @@ const Dashboard: React.FC = () => {
     };
   }, []);
 
-  // Handle copying coordinates to clipboard
-  const handleCopyCoordinates = (shape: DrawnShape) => {
-    const coordsStr = shape.coordinates
-      .map((coord) => `${coord[0].toFixed(6)},${coord[1].toFixed(6)}`)
-      .join(" | ");
-
-    // Copy to clipboard
-    navigator.clipboard
-      .writeText(coordsStr)
-      .then(() => {
-        setCopiedShapeId(shape.id);
-        message.success("Coordinates copied to clipboard!", 1);
-
-        // Reset the copied state after 2 seconds
-        setTimeout(() => {
-          setCopiedShapeId(null);
-        }, 2000);
-      })
-      .catch((err) => {
-        message.error("Failed to copy coordinates");
-        console.error("Failed to copy:", err);
-      });
-  };
 
   return (
     <>
       {/* Lazy loaded MapComponent with Suspense fallback */}
       <Suspense
-              fallback={
-                <Spin
-                  size="large"
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                  }}
-                />
-              }
-            >
-              <MapComponent
-                drawingMode={drawingMode}
-                markers={markers}
-                hoveredResult={hoveredResult}
-                clickedResult={clickedResult}
-                apiResponse={apiResponse}
-                rightSidebarCollapsed={rightSidebarCollapsed}
-              />
-            </Suspense>
-      {drawnShapes.length > 0 && (
+        fallback={
+          <Spin
+            size="large"
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          />
+        }
+      >
+        <MapComponent
+          drawingMode={drawingMode}
+          markers={markers}
+          hoveredResult={hoveredResult}
+          clickedResult={clickedResult}
+          apiResponse={apiResponse}
+          rightSidebarCollapsed={rightSidebarCollapsed}
+        />
+      </Suspense>
+      {/*{drawnShapes.length > 0 && (
         <div
           style={{
             position: "absolute",
@@ -232,7 +188,7 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
         </div>
-      )}
+      )}*/}
     </>
   );
 };

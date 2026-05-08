@@ -1,3 +1,29 @@
+/* Scrollbar Styling for Sidebars */
+.rightsidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #3b4045 #1c2128;
+}
+.rightsidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.rightsidebar-scroll::-webkit-scrollbar-track {
+  background: #1c2128;
+  border-radius: 3px;
+}
+.rightsidebar-scroll::-webkit-scrollbar-thumb {
+  background: #3b4045;
+  border-radius: 3px;
+}
+.rightsidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* Right Sidebar Ant Layout Specific */
+.ant-layout-sider-right > .ant-layout-sider-children {
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
 /* Sidebar Input Placeholder Styling */
 
 /* Sidebar Collapse/Expand Animation */

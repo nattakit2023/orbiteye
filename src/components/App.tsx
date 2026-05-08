@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Content from "../layouts/Content";
 import Header from "../layouts/Header";
 import Sidebar from "../layouts/Sidebar";
@@ -39,6 +39,11 @@ const App: React.FC = () => {
   // State for tracking hovered/clicked result
   const [hoveredResult, setHoveredResult] = useState<ResultData | null>(null);
   const [clickedResult, setClickedResult] = useState<ResultData | null>(null);
+  const [drawnShape, setDrawnShape] = useState<{
+    type: "circle" | "polygon" | "rectangle";
+    coordinates: Array<[number, number]>;
+    radius?: number;
+  } | null>(null);
 
   // Use SWR to fetch data when apiRequest is set
   const {
@@ -59,10 +64,31 @@ const App: React.FC = () => {
   );
 
   // Handle analyze request from sidebar
-  const handleAnalyze = (request: ApiRequest) => {
-    console.log("App: Handle analyze called with:", request);
-    setApiRequest(request);
-  };
+    const handleAnalyze = (request: ApiRequest) => {
+      console.log("App: Handle analyze called with:", request);
+      setApiRequest(request);
+    };
+
+    // Listen for shape completed events from MapComponent
+    useEffect(() => {
+      const handleShapeCompleted = (event: Event) => {
+        const customEvent = event as CustomEvent<{
+          type: "circle" | "polygon" | "rectangle";
+          coordinates: Array<[number, number]>;
+          radius?: number;
+          area?: number;
+        }>;
+        setDrawnShape({
+          type: customEvent.detail.type,
+          coordinates: customEvent.detail.coordinates,
+          radius: customEvent.detail.radius,
+          area: customEvent.detail.area,
+        });
+      };
+
+      window.addEventListener("shapeCompleted", handleShapeCompleted);
+      return () => window.removeEventListener("shapeCompleted", handleShapeCompleted);
+    }, []);
 
   // Handle result click from RightSidebar
   const handleResultClick = (result: ResultData) => {
@@ -108,6 +134,7 @@ const App: React.FC = () => {
               height: "100%",
               zIndex: 1001,
               boxShadow: "4px 0 16px rgba(0,0,0,0.3)",
+              overflow: "auto",
             }}
           >
             <Sidebar
@@ -115,6 +142,8 @@ const App: React.FC = () => {
               onCollapse={() => setSidebarOpen(false)}
               onOpenRightSidebar={openRightSidebarSearch}
               onAnalyze={handleAnalyze}
+              drawnShape={drawnShape}
+              onClearDrawnShape={() => setDrawnShape(null)}
             />
           </div>
         )}
@@ -146,11 +175,10 @@ const App: React.FC = () => {
             style={{
               position: "fixed",
               top: 70,
-              right: 15,
-              width: 300,
-              height: "100%",
+              right: 25,
+              width: 380,
+              height: "calc(100vh - 70px)",
               zIndex: 1001,
-              boxShadow: "-4px 0 16px rgba(0,0,0,0.3)",
             }}
           >
             <RightSidebar

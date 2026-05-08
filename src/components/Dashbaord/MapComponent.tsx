@@ -295,6 +295,9 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
             fillOpacity: 0.3,
           }).addTo(map);
 
+          // Calculate area for circle
+          const circleArea = Math.PI * Math.pow(radius, 2);
+
           // Mark shape as completed so it won't be removed in cleanup
           shapeCompletedRef.current = true;
 
@@ -305,6 +308,7 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
                 type: "circle",
                 coordinates: pointsRef.current,
                 radius: radius,
+                area: circleArea,
                 timestamp: Date.now(),
               },
             }),
@@ -366,6 +370,11 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
           const nw = L.latLng(ne.lat, sw.lng);
           const se = L.latLng(sw.lat, ne.lng);
 
+          // Calculate rectangle area
+          const width = map.distance(L.latLng(ne.lat, sw.lng), L.latLng(ne.lat, ne.lng));
+          const height = map.distance(L.latLng(ne.lat, ne.lng), L.latLng(sw.lat, ne.lng));
+          const rectangleArea = width * height;
+
           // Dispatch completed event
           window.dispatchEvent(
             new CustomEvent("shapeCompleted", {
@@ -377,6 +386,7 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
                   [ne.lat, ne.lng],
                   [se.lat, se.lng],
                 ],
+                area: rectangleArea,
                 timestamp: Date.now(),
               },
             }),
@@ -442,12 +452,16 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
             // Mark shape as completed
             shapeCompletedRef.current = true;
 
+            // Calculate polygon area
+            const polygonArea = calculatePolygonArea(pointsRef.current);
+
             // Dispatch completed event
             window.dispatchEvent(
               new CustomEvent("shapeCompleted", {
                 detail: {
                   type: "polygon",
                   coordinates: pointsRef.current,
+                  area: polygonArea,
                   timestamp: Date.now(),
                 },
               }),
@@ -702,12 +716,16 @@ function DrawingHandler({ drawingMode }: DrawingHandlerProps) {
         // Mark shape as completed so it won't be removed in cleanup
         shapeCompletedRef.current = true;
 
+        // Calculate polygon area
+        const polygonArea = calculatePolygonArea(pointsRef.current);
+
         // Dispatch completed event
         window.dispatchEvent(
           new CustomEvent("shapeCompleted", {
             detail: {
               type: "polygon",
               coordinates: pointsRef.current,
+              area: polygonArea,
               timestamp: Date.now(),
             },
           }),
@@ -1143,7 +1161,7 @@ const BaseLayerControl: React.FC<{
   const containerStyle: React.CSSProperties = {
     position: "absolute",
     bottom: "10px",
-    right: rightSidebarCollapsed ? "10px" : "325px",
+    right: rightSidebarCollapsed ? "10px" : "420px",
     zIndex: 1001,
     display: "flex",
     flexDirection: "column",
