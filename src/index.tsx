@@ -6,6 +6,7 @@ import Spin from "antd/es/spin";
 import App from "./components/App.tsx";
 import RequireAuth from "./authentication/requireauth/requireauth.tsx";
 import Authentication from "./components/Authentication.tsx";
+import { QueryProvider } from "./providers/QueryProvider.tsx";
 import { CartProvider } from "./context/CartContext.tsx";
 import { OrderProvider } from "./context/OrderContext.tsx";
 
@@ -17,7 +18,6 @@ const Favorites = lazy(() => import("./components/Features/Favorites.tsx"));
 const Cart = lazy(() => import("./components/Features/Cart.tsx"));
 const Order = lazy(() => import("./components/Features/Order.tsx"));
 const ChangePassword = lazy(() => import("./components/Features/ChangePassword.tsx"));
-// const Explore = lazy(() => import("./authentication/explore/explore.tsx"));
 const Login = lazy(() => import("./authentication/login/login.tsx"));
 
 const container = document.getElementById("root");
@@ -44,12 +44,13 @@ const LoadingFallback = () => (
 
 root.render(
   <React.StrictMode>
-    <OrderProvider>
-      <CartProvider>
-        <AntApp>
-        <BrowserRouter>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
+    <QueryProvider>
+      <OrderProvider>
+        <CartProvider>
+          <AntApp>
+            <BrowserRouter>
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
             {/* Main authenticated layout with App wrapping all routes */}
             <Route
               path="/"
@@ -61,7 +62,7 @@ root.render(
             >
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<Dashboard />} />
-            
+
               {/* Feature Routes */}
               <Route path="/feature/overview" element={<Overview />} />
               <Route path="/feature/profile" element={<Profile />} />
@@ -77,10 +78,12 @@ root.render(
               <Route path="login" element={<Login />} />
             </Route>
           </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </AntApp>
-  </CartProvider>
-</OrderProvider>
-  </React.StrictMode>,
+
+              </Suspense>
+            </BrowserRouter>
+          </AntApp>
+        </CartProvider>
+      </OrderProvider>
+    </QueryProvider>
+  </React.StrictMode>
 );

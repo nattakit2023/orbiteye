@@ -278,10 +278,19 @@ input CancelOrderInput {
 type Cart {
   createdAt: DateTime!
   id: Int!
+  items: [CartItem!]!
   sessionId: String
   status: CartStatus!
   updatedAt: DateTime!
   userId: Int
+}
+
+type CartItem {
+  id: Int!
+  productId: Int!
+  productName: String!
+  quantity: Int!
+  unitPrice: Float!
 }
 
 type CartConversionResult {

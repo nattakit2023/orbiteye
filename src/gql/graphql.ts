@@ -313,10 +313,21 @@ export type Cart = {
   __typename?: 'Cart';
   createdAt: Scalars['DateTime']['output'];
   id: Scalars['Int']['output'];
+  items: Array<CartItem>;
   sessionId?: Maybe<Scalars['String']['output']>;
   status: CartStatus;
   updatedAt: Scalars['DateTime']['output'];
   userId?: Maybe<Scalars['Int']['output']>;
+};
+
+/** Cart item in the GraphQL schema */
+export type CartItem = {
+  __typename?: 'CartItem';
+  id: Scalars['Int']['output'];
+  productId: Scalars['Int']['output'];
+  productName: Scalars['String']['output'];
+  quantity: Scalars['Int']['output'];
+  unitPrice: Scalars['Float']['output'];
 };
 
 export type CartConversionResult = {

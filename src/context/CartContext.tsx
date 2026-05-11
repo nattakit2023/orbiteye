@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { message } from "antd";
+import { useCartByUserId, useCreateCart, useAddCartItem, useRemoveCartItem, useUpdateCartItem } from "@/service/graphql/hooks/useCart";
 
 export interface CartItem {
   id: string;
@@ -18,6 +20,8 @@ interface CartContextType {
   clearCart: () => void;
   isInCart: (id: string) => boolean;
   updateQuantity: (id: string, quantity: number) => void;
+  isLoading: boolean;
+  isSyncing: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -32,26 +36,147 @@ export const useCart = () => {
 
 interface CartProviderProps {
   children: ReactNode;
+  userId?: string;
 }
 
-export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-  const addToCart = (item: Omit<CartItem, "id">) => {
-    // Generate a unique ID based on name and date to avoid duplicates
-    const id = `${item.name}-${item.date}`;
-    
-    setCartItems((prev) => {
-      // Check if item already exists
-      if (prev.some((cartItem) => cartItem.id === id)) {
-        return prev; // Don't add duplicates
+// Helper to get user ID from localStorage or create guest session
+const getUserIdentifier = (): string => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    try {
+      const payload = token.split(".")[1];
+      if (payload) {
+        const decoded = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+        if (decoded.sub || decoded.userId || decoded.id) {
+          return String(decoded.sub || decoded.userId || decoded.id);
+        }
       }
-      return [...prev, { ...item, id, quantity: item.quantity || 1 }];
-    });
+    } catch {
+      // Token decode failed, continue with guest
+    }
+  }
+
+  const storedUserId = localStorage.getItem("userId");
+  if (storedUserId) {
+    return storedUserId;
+  }
+
+  let guestSessionId = localStorage.getItem("guestSessionId");
+  if (!guestSessionId) {
+    guestSessionId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    localStorage.setItem("guestSessionId", guestSessionId);
+  }
+
+  return guestSessionId;
+};
+
+export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: userIdProp }) => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [serverCartId, setServerCartId] = useState<string | null>(null);
+
+  const effectiveUserId = userIdProp || getUserIdentifier();
+  const isGuest = !userIdProp && effectiveUserId.startsWith("guest_");
+
+  const { data: serverCart, isLoading: isLoadingCart } = useCartByUserId(effectiveUserId);
+  const createCartMutation = useCreateCart();
+  const addCartItemMutation = useAddCartItem();
+  const removeCartItemMutation = useRemoveCartItem();
+  const updateCartItemMutation = useUpdateCartItem();
+
+  useEffect(() => {
+    if (!serverCart) return;
+
+    const newServerCartId = serverCart.id?.toString() || null;
+    setServerCartId(newServerCartId);
+
+    if (serverCart.items && Array.isArray(serverCart.items)) {
+      const mappedItems: CartItem[] = serverCart.items.map((item) => ({
+        id: item.id?.toString() || `${item.productId}-${item.productName}`,
+        name: item.productName || "Unknown Product",
+        date: Date.now(),
+        cloud: 0,
+        quality: "good",
+        price: item.unitPrice || 0,
+        quantity: item.quantity || 1,
+      }));
+      setCartItems(mappedItems);
+    }
+  }, [serverCart]);
+
+  const ensureCartId = async (): Promise<string> => {
+    if (serverCartId) return serverCartId;
+
+    if (effectiveUserId && !isGuest) {
+      try {
+        const newCart = await createCartMutation.mutateAsync({
+          userId: effectiveUserId,
+        });
+        const newId = newCart.id?.toString() || "0";
+        setServerCartId(newId);
+        return newId;
+      } catch (error) {
+        console.error("Failed to create cart:", error);
+        throw error;
+      }
+    }
+    return "0";
   };
 
-  const removeFromCart = (id: string) => {
+  const addToCart = async (item: Omit<CartItem, "id">) => {
+    const id = `${item.name}-${item.date}`;
+
+    if (cartItems.some((cartItem) => cartItem.id === id)) {
+      message.info("Item already in cart");
+      return;
+    }
+
+    const newItem: CartItem = { ...item, id, quantity: item.quantity || 1 };
+    setCartItems((prev) => [...prev, newItem]);
+
+    if (effectiveUserId && !isGuest) {
+      try {
+        setIsSyncing(true);
+        const cartId = await ensureCartId();
+        await addCartItemMutation.mutateAsync({
+          cartId: parseInt(cartId, 10),
+          productId: 0,
+          quantity: item.quantity || 1,
+          unitPrice: item.price,
+        });
+        message.success("Item added to cart");
+      } catch (error) {
+        setCartItems((prev) => prev.filter((i) => i.id !== id));
+        message.error("Failed to add item to cart");
+        console.error("Add to cart failed:", error);
+      } finally {
+        setIsSyncing(false);
+      }
+    }
+  };
+
+  const removeFromCart = async (id: string) => {
+    const itemToRemove = cartItems.find((item) => item.id === id);
+
     setCartItems((prev) => prev.filter((item) => item.id !== id));
+
+    if (effectiveUserId && !isGuest && itemToRemove) {
+      try {
+        setIsSyncing(true);
+        const cartId = await ensureCartId();
+        await removeCartItemMutation.mutateAsync({
+          cartId: parseInt(cartId, 10),
+          itemId: parseInt(id, 10) || 0,
+        });
+        message.success("Item removed from cart");
+      } catch (error) {
+        setCartItems((prev) => [...prev, itemToRemove]);
+        message.error("Failed to remove item from cart");
+        console.error("Remove from cart failed:", error);
+      } finally {
+        setIsSyncing(false);
+      }
+    }
   };
 
   const clearCart = () => {
@@ -62,16 +187,46 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     return cartItems.some((item) => item.id === id);
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = async (id: string, quantity: number) => {
     if (quantity < 1) return;
+
+    const previousItems = [...cartItems];
+
     setCartItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, quantity } : item))
     );
+
+    if (effectiveUserId && !isGuest) {
+      try {
+        setIsSyncing(true);
+        const cartId = await ensureCartId();
+        await updateCartItemMutation.mutateAsync({
+          cartId: parseInt(cartId, 10),
+          itemId: parseInt(id, 10) || 0,
+          quantity,
+        });
+      } catch (error) {
+        setCartItems(previousItems);
+        message.error("Failed to update quantity");
+        console.error("Update quantity failed:", error);
+      } finally {
+        setIsSyncing(false);
+      }
+    }
   };
 
   return (
     <CartContext.Provider
-      value={{ cartItems, addToCart, removeFromCart, clearCart, isInCart, updateQuantity }}
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        clearCart,
+        isInCart,
+        updateQuantity,
+        isLoading: isLoadingCart,
+        isSyncing,
+      }}
     >
       {children}
     </CartContext.Provider>

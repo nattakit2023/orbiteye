@@ -22,7 +22,6 @@ const GET_CARTS = `
         productName
         quantity
         unitPrice
-        subtotal
       }
       totalAmount
       status
@@ -43,7 +42,6 @@ const GET_CART = `
         productName
         quantity
         unitPrice
-        subtotal
       }
       totalAmount
       status
@@ -53,9 +51,10 @@ const GET_CART = `
   }
 `;
 
+// Query to get cart by user ID (matches new_backend: cart(user_id: i32))
 const GET_CART_BY_USER_ID = `
-  query GetCartByUserId($userId: String!) {
-    cartByUserId(userId: $userId) {
+  query GetCartByUserId($userId: Int!) {
+    cart(userId: $userId) {
       id
       userId
       items {
@@ -64,7 +63,6 @@ const GET_CART_BY_USER_ID = `
         productName
         quantity
         unitPrice
-        subtotal
       }
       totalAmount
       status
@@ -85,7 +83,6 @@ const CREATE_CART = `
         productName
         quantity
         unitPrice
-        subtotal
       }
       totalAmount
       status
@@ -106,7 +103,6 @@ const ADD_CART_ITEM = `
         productName
         quantity
         unitPrice
-        subtotal
       }
       totalAmount
       status
@@ -127,7 +123,6 @@ const UPDATE_CART_ITEM = `
         productName
         quantity
         unitPrice
-        subtotal
       }
       totalAmount
       status
@@ -148,7 +143,6 @@ const REMOVE_CART_ITEM = `
         productName
         quantity
         unitPrice
-        subtotal
       }
       totalAmount
       status
@@ -201,16 +195,24 @@ export const useCart = (id: string) => {
 };
 
 /**
- * Get cart by user ID
+ * Get cart by user ID (matches new_backend cart query)
  */
 export const useCartByUserId = (userId: string) => {
   return useQuery({
     queryKey: ["cartByUserId", userId],
     queryFn: async () => {
-      const response = await graphqlClient.request(GET_CART_BY_USER_ID, { userId });
-      return (response as { cartByUserId: Cart | null }).cartByUserId;
+      // Parse userId to integer for the backend query
+      const userIdInt = parseInt(userId, 10);
+      if (isNaN(userIdInt)) {
+        throw new Error("Invalid user ID");
+      }
+      const response = await graphqlClient.request(GET_CART_BY_USER_ID, { 
+        userId: userIdInt 
+      });
+      // Note: backend returns { cart: Cart } not { cartByUserId: Cart }
+      return (response as { cart: Cart | null }).cart;
     },
-    enabled: !!userId,
+    enabled: !!userId && !isNaN(parseInt(userId, 10)),
   });
 };
 
@@ -330,12 +332,14 @@ export const useConvertCartToOrder = () => {
  * Build shipping address input object
  */
 export const buildShippingAddress = (
+  name: string,
   street: string,
   city: string,
   state: string,
   country: string,
   postalCode: string
 ): ShippingAddressInput => ({
+  name,
   street,
   city,
   state,

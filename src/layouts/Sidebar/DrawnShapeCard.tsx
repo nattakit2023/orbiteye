@@ -51,7 +51,7 @@ const DrawnShapeCard: React.FC<DrawnShapeCardProps> = ({ shape, onClose }) => {
   return (
     <div
       style={{
-        backgroundColor: "#090b22",
+        backgroundColor: "#22253C",
         borderRadius: "8px",
         border: "1px solid #30363d",
         overflow: "hidden",
@@ -64,19 +64,18 @@ const DrawnShapeCard: React.FC<DrawnShapeCardProps> = ({ shape, onClose }) => {
           style={{
             width: "3px",
             backgroundColor: "#0B5AFE",
-            marginRight: "12px",
+            margin: "12px 15px",
           }}
         />
 
         {/* Content */}
-        <div style={{ padding: "12px 12px 12px 0", flex: 1 }}>
+        <div style={{ padding: "10px 10px 10px 0", flex: 1 }}>
           {/* Header - Title with close button */}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: "8px",
             }}
           >
             <Text
