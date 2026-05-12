@@ -129,7 +129,7 @@ enum ActivityType {
 """Input for adding an item to cart"""
 input AddCartItemInput {
   cartId: Int!
-  productId: Int!
+  productName: String!
   quantity: Int!
   unitPrice: Float!
 }
@@ -281,16 +281,9 @@ type Cart {
   items: [CartItem!]!
   sessionId: String
   status: CartStatus!
+  totalAmount: Float!
   updatedAt: DateTime!
   userId: Int
-}
-
-type CartItem {
-  id: Int!
-  productId: Int!
-  productName: String!
-  quantity: Int!
-  unitPrice: Float!
 }
 
 type CartConversionResult {
@@ -299,13 +292,17 @@ type CartConversionResult {
   success: Boolean!
 }
 
-type CartMutation {
-  """Abandon a cart (mark as abandoned)"""
-  abandonCart(
-    """Cart ID"""
-    id: String!
-  ): Cart!
+"""Cart item in the GraphQL schema"""
+type CartItem {
+  cartId: Int!
+  createdAt: DateTime!
+  id: Int!
+  productName: String!
+  quantity: Int!
+  unitPrice: Float!
+}
 
+type CartMutation {
   """Add an item to cart"""
   addCartItem(
     """Add item input"""
@@ -328,30 +325,6 @@ type CartMutation {
   createCart(
     """Cart creation input"""
     input: CreateCartInput!
-  ): Cart!
-
-  """Delete a cart permanently"""
-  deleteCart(
-    """Cart ID"""
-    id: String!
-  ): Boolean!
-
-  """Extend cart expiration (for guest carts)"""
-  extendCartExpiration(
-    """Hours to extend"""
-    hours: Int!
-
-    """Cart ID"""
-    id: String!
-  ): Cart!
-
-  """Merge guest cart into user cart"""
-  mergeCarts(
-    """Guest cart ID"""
-    guestCartId: String!
-
-    """User cart ID"""
-    userCartId: String!
   ): Cart!
 
   """Remove an item from cart"""
@@ -389,10 +362,7 @@ type CartQuery {
   """Get all carts with optional pagination"""
   carts(pagination: PaginationInput): [Cart!]!
 
-  """Get expired carts (for cleanup operations)"""
-  expiredCarts(pagination: PaginationInput): [Cart!]!
-
-  """Get user's cart history (converted carts)"""
+  """Get user's cart history"""
   myCartHistory(
     """User ID"""
     userId: String!
@@ -503,8 +473,11 @@ type MutationRoot {
   changePassword: AuthMutation!
   convertCartToOrder: CartMutation!
 
-  """Delegate to cart mutations"""
-  createCart: CartMutation!
+  """Create cart mutation"""
+  createCart(
+    """Cart creation input"""
+    input: CreateCartInput!
+  ): Cart!
 
   """Delegate to order mutations"""
   createOrder: OrderMutation!

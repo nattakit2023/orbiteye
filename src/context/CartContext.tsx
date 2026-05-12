@@ -92,7 +92,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
 
     if (serverCart.items && Array.isArray(serverCart.items)) {
       const mappedItems: CartItem[] = serverCart.items.map((item) => ({
-        id: item.id?.toString() || `${item.productId}-${item.productName}`,
+        id: item.id?.toString() || `${item.productName}`,
         name: item.productName || "Unknown Product",
         date: Date.now(),
         cloud: 0,
@@ -140,7 +140,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
         const cartId = await ensureCartId();
         await addCartItemMutation.mutateAsync({
           cartId: parseInt(cartId, 10),
-          productId: 0,
+          productName: item.name,
           quantity: item.quantity || 1,
           unitPrice: item.price,
         });

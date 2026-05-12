@@ -18,7 +18,6 @@ const GET_CARTS = `
       userId
       items {
         id
-        productId
         productName
         quantity
         unitPrice
@@ -38,7 +37,6 @@ const GET_CART = `
       userId
       items {
         id
-        productId
         productName
         quantity
         unitPrice
@@ -59,7 +57,6 @@ const GET_CART_BY_USER_ID = `
       userId
       items {
         id
-        productId
         productName
         quantity
         unitPrice
@@ -79,7 +76,6 @@ const CREATE_CART = `
       userId
       items {
         id
-        productId
         productName
         quantity
         unitPrice
@@ -99,7 +95,6 @@ const ADD_CART_ITEM = `
       userId
       items {
         id
-        productId
         productName
         quantity
         unitPrice
@@ -119,7 +114,6 @@ const UPDATE_CART_ITEM = `
       userId
       items {
         id
-        productId
         productName
         quantity
         unitPrice
@@ -139,7 +133,6 @@ const REMOVE_CART_ITEM = `
       userId
       items {
         id
-        productId
         productName
         quantity
         unitPrice

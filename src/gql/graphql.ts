@@ -167,7 +167,7 @@ export enum ActivityType {
 /** Input for adding an item to cart */
 export type AddCartItemInput = {
   cartId: Scalars['Int']['input'];
-  productId: Scalars['Int']['input'];
+  productName: Scalars['String']['input'];
   quantity: Scalars['Int']['input'];
   unitPrice: Scalars['Float']['input'];
 };
@@ -316,18 +316,9 @@ export type Cart = {
   items: Array<CartItem>;
   sessionId?: Maybe<Scalars['String']['output']>;
   status: CartStatus;
+  totalAmount: Scalars['Float']['output'];
   updatedAt: Scalars['DateTime']['output'];
   userId?: Maybe<Scalars['Int']['output']>;
-};
-
-/** Cart item in the GraphQL schema */
-export type CartItem = {
-  __typename?: 'CartItem';
-  id: Scalars['Int']['output'];
-  productId: Scalars['Int']['output'];
-  productName: Scalars['String']['output'];
-  quantity: Scalars['Int']['output'];
-  unitPrice: Scalars['Float']['output'];
 };
 
 export type CartConversionResult = {
@@ -337,10 +328,19 @@ export type CartConversionResult = {
   success: Scalars['Boolean']['output'];
 };
 
+/** Cart item in the GraphQL schema */
+export type CartItem = {
+  __typename?: 'CartItem';
+  cartId: Scalars['Int']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['Int']['output'];
+  productName: Scalars['String']['output'];
+  quantity: Scalars['Int']['output'];
+  unitPrice: Scalars['Float']['output'];
+};
+
 export type CartMutation = {
   __typename?: 'CartMutation';
-  /** Abandon a cart (mark as abandoned) */
-  abandonCart: Cart;
   /** Add an item to cart */
   addCartItem: Cart;
   /** Clear all items from cart */
@@ -349,21 +349,10 @@ export type CartMutation = {
   convertCartToOrder: CartConversionResult;
   /** Create a new cart (for user or guest) */
   createCart: Cart;
-  /** Delete a cart permanently */
-  deleteCart: Scalars['Boolean']['output'];
-  /** Extend cart expiration (for guest carts) */
-  extendCartExpiration: Cart;
-  /** Merge guest cart into user cart */
-  mergeCarts: Cart;
   /** Remove an item from cart */
   removeCartItem: Cart;
   /** Update cart item quantity */
   updateCartItem: Cart;
-};
-
-
-export type CartMutationAbandonCartArgs = {
-  id: Scalars['String']['input'];
 };
 
 
@@ -387,23 +376,6 @@ export type CartMutationCreateCartArgs = {
 };
 
 
-export type CartMutationDeleteCartArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type CartMutationExtendCartExpirationArgs = {
-  hours: Scalars['Int']['input'];
-  id: Scalars['String']['input'];
-};
-
-
-export type CartMutationMergeCartsArgs = {
-  guestCartId: Scalars['String']['input'];
-  userCartId: Scalars['String']['input'];
-};
-
-
 export type CartMutationRemoveCartItemArgs = {
   input: RemoveCartItemInput;
 };
@@ -423,9 +395,7 @@ export type CartQuery = {
   cartBySession?: Maybe<Cart>;
   /** Get all carts with optional pagination */
   carts: Array<Cart>;
-  /** Get expired carts (for cleanup operations) */
-  expiredCarts: Array<Cart>;
-  /** Get user's cart history (converted carts) */
+  /** Get user's cart history */
   myCartHistory: Array<CartSummary>;
 };
 
@@ -446,11 +416,6 @@ export type CartQueryCartBySessionArgs = {
 
 
 export type CartQueryCartsArgs = {
-  pagination?: InputMaybe<PaginationInput>;
-};
-
-
-export type CartQueryExpiredCartsArgs = {
   pagination?: InputMaybe<PaginationInput>;
 };
 
@@ -554,8 +519,8 @@ export type MutationRoot = {
   cancelOrder: OrderMutation;
   changePassword: AuthMutation;
   convertCartToOrder: CartMutation;
-  /** Delegate to cart mutations */
-  createCart: CartMutation;
+  /** Create cart mutation */
+  createCart: Cart;
   /** Delegate to order mutations */
   createOrder: OrderMutation;
   /** Delegate to user mutations */
@@ -573,6 +538,11 @@ export type MutationRoot = {
   updateOrder: OrderMutation;
   updateUser: UserMutation;
   verifyEmail: AuthMutation;
+};
+
+
+export type MutationRootCreateCartArgs = {
+  input: CreateCartInput;
 };
 
 /** Order GraphQL type */
