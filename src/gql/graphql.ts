@@ -167,6 +167,7 @@ export enum ActivityType {
 /** Input for adding an item to cart */
 export type AddCartItemInput = {
   cartId: Scalars['Int']['input'];
+  imageUrl?: InputMaybe<Scalars['String']['input']>;
   productName: Scalars['String']['input'];
   quantity: Scalars['Int']['input'];
   unitPrice: Scalars['Float']['input'];
@@ -334,6 +335,7 @@ export type CartItem = {
   cartId: Scalars['Int']['output'];
   createdAt: Scalars['DateTime']['output'];
   id: Scalars['Int']['output'];
+  imageUrl?: Maybe<Scalars['String']['output']>;
   productName: Scalars['String']['output'];
   quantity: Scalars['Int']['output'];
   unitPrice: Scalars['Float']['output'];
@@ -515,7 +517,7 @@ export type LoginInput = {
 
 export type MutationRoot = {
   __typename?: 'MutationRoot';
-  addCartItem: CartMutation;
+  addCartItem: Cart;
   cancelOrder: OrderMutation;
   changePassword: AuthMutation;
   convertCartToOrder: CartMutation;
@@ -538,6 +540,11 @@ export type MutationRoot = {
   updateOrder: OrderMutation;
   updateUser: UserMutation;
   verifyEmail: AuthMutation;
+};
+
+
+export type MutationRootAddCartItemArgs = {
+  input: AddCartItemInput;
 };
 
 

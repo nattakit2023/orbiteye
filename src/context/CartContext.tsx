@@ -97,6 +97,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
         date: Date.now(),
         cloud: 0,
         quality: "good",
+        imageUrl: item.imageUrl,
         price: item.unitPrice || 0,
         quantity: item.quantity || 1,
       }));
@@ -141,6 +142,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
         await addCartItemMutation.mutateAsync({
           cartId: parseInt(cartId, 10),
           productName: item.name,
+          imageUrl: item.imageUrl,
           quantity: item.quantity || 1,
           unitPrice: item.price,
         });

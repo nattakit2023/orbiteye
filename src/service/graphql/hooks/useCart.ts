@@ -19,6 +19,7 @@ const GET_CARTS = `
       items {
         id
         productName
+          imageUrl
         quantity
         unitPrice
       }
@@ -38,6 +39,7 @@ const GET_CART = `
       items {
         id
         productName
+          imageUrl
         quantity
         unitPrice
       }
@@ -51,20 +53,23 @@ const GET_CART = `
 
 // Query to get cart by user ID (matches new_backend: cart(user_id: i32))
 const GET_CART_BY_USER_ID = `
-  query GetCartByUserId($userId: Int!) {
-    cart(userId: $userId) {
-      id
-      userId
-      items {
+  query GetCartByUserId($userId: String!) {
+    carts {
+      activeCart(userId: $userId) {
         id
-        productName
-        quantity
-        unitPrice
+        userId
+        items {
+          id
+          productName
+          imageUrl
+          quantity
+          unitPrice
+        }
+        totalAmount
+        status
+        createdAt
+        updatedAt
       }
-      totalAmount
-      status
-      createdAt
-      updatedAt
     }
   }
 `;
@@ -77,6 +82,7 @@ const CREATE_CART = `
       items {
         id
         productName
+          imageUrl
         quantity
         unitPrice
       }
@@ -96,6 +102,7 @@ const ADD_CART_ITEM = `
       items {
         id
         productName
+          imageUrl
         quantity
         unitPrice
       }
@@ -115,6 +122,7 @@ const UPDATE_CART_ITEM = `
       items {
         id
         productName
+          imageUrl
         quantity
         unitPrice
       }
@@ -134,6 +142,7 @@ const REMOVE_CART_ITEM = `
       items {
         id
         productName
+          imageUrl
         quantity
         unitPrice
       }
@@ -194,18 +203,16 @@ export const useCartByUserId = (userId: string) => {
   return useQuery({
     queryKey: ["cartByUserId", userId],
     queryFn: async () => {
-      // Parse userId to integer for the backend query
-      const userIdInt = parseInt(userId, 10);
-      if (isNaN(userIdInt)) {
-        throw new Error("Invalid user ID");
+      if (!userId) {
+        throw new Error("User ID is required");
       }
       const response = await graphqlClient.request(GET_CART_BY_USER_ID, { 
-        userId: userIdInt 
+        userId: userId 
       });
-      // Note: backend returns { cart: Cart } not { cartByUserId: Cart }
-      return (response as { cart: Cart | null }).cart;
+      // Note: backend returns { carts: { activeCart: Cart } } 
+      return (response as { carts: { activeCart: Cart | null } }).carts?.activeCart;
     },
-    enabled: !!userId && !isNaN(parseInt(userId, 10)),
+    enabled: !!userId,
   });
 };
 

@@ -129,6 +129,7 @@ enum ActivityType {
 """Input for adding an item to cart"""
 input AddCartItemInput {
   cartId: Int!
+  imageUrl: String
   productName: String!
   quantity: Int!
   unitPrice: Float!
@@ -297,6 +298,7 @@ type CartItem {
   cartId: Int!
   createdAt: DateTime!
   id: Int!
+  imageUrl: String
   productName: String!
   quantity: Int!
   unitPrice: Float!
@@ -468,7 +470,10 @@ input LoginInput {
 }
 
 type MutationRoot {
-  addCartItem: CartMutation!
+  addCartItem(
+    """Add item input"""
+    input: AddCartItemInput!
+  ): Cart!
   cancelOrder: OrderMutation!
   changePassword: AuthMutation!
   convertCartToOrder: CartMutation!
