@@ -19,7 +19,8 @@ const GET_CARTS = `
       items {
         id
         productName
-          imageUrl
+        satelliteName
+        imageUrl
         quantity
         unitPrice
       }
@@ -39,7 +40,8 @@ const GET_CART = `
       items {
         id
         productName
-          imageUrl
+        satelliteName
+        imageUrl
         quantity
         unitPrice
       }
@@ -61,6 +63,7 @@ const GET_CART_BY_USER_ID = `
         items {
           id
           productName
+          satelliteName
           imageUrl
           quantity
           unitPrice

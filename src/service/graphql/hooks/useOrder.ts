@@ -213,6 +213,16 @@ const CANCEL_ORDER_MUTATION = `
   }
 `;
 
+const CONVERT_CART_TO_ORDER_MUTATION = `
+  mutation ConvertCartToOrder($input: ConvertCartToOrderInput!) {
+    convertCartToOrder(input: $input) {
+      success
+      orderId
+      message
+    }
+  }
+`;
+
 // Hook to get all orders with pagination
 export const useOrders = (pagination?: OrderPaginationInput) => {
   return useQuery({
@@ -327,6 +337,23 @@ export const useCancelOrder = () => {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order", id] });
+      queryClient.invalidateQueries({ queryKey: ["orderStatistics"] });
+      queryClient.invalidateQueries({ queryKey: ["recentOrders"] });
+    },
+  });
+};
+
+// Hook to convert cart to order
+export const useConvertCartToOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: { cartId: number; shippingAddress?: string; billingAddress?: string }) => {
+      const response = await graphqlClient.request(CONVERT_CART_TO_ORDER_MUTATION, { input });
+      return (response as { convertCartToOrder: { success: boolean; orderId?: string; message?: string } }).convertCartToOrder;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["orderStatistics"] });
       queryClient.invalidateQueries({ queryKey: ["recentOrders"] });
     },

@@ -4,7 +4,9 @@ import { useCartByUserId, useCreateCart, useAddCartItem, useRemoveCartItem, useU
 
 export interface CartItem {
   id: string;
+  serverId?: number;
   name: string;
+  satelliteName?: string;
   date: number;
   cloud: number;
   quality: string;
@@ -15,6 +17,7 @@ export interface CartItem {
 
 interface CartContextType {
   cartItems: CartItem[];
+  serverCartId: string | null;
   addToCart: (item: Omit<CartItem, "id">) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
@@ -92,8 +95,11 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
 
     if (serverCart.items && Array.isArray(serverCart.items)) {
       const mappedItems: CartItem[] = serverCart.items.map((item) => ({
+        // For server items, use database id as local id for consistency
         id: item.id?.toString() || `${item.productName}`,
+        serverId: item.id,
         name: item.productName || "Unknown Product",
+        satelliteName: item.satelliteName,
         date: Date.now(),
         cloud: 0,
         quality: "good",
@@ -125,7 +131,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
   };
 
   const addToCart = async (item: Omit<CartItem, "id">) => {
-    const id = `${item.name}-${item.date}`;
+    // Create unique id based on name and timestamp for local items
+    const localId = `${item.name}-${item.date}`;
+    const id = localId;
 
     if (cartItems.some((cartItem) => cartItem.id === id)) {
       message.info("Item already in cart");
@@ -142,6 +150,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
         await addCartItemMutation.mutateAsync({
           cartId: parseInt(cartId, 10),
           productName: item.name,
+          satelliteName: item.satelliteName,
           imageUrl: item.imageUrl,
           quantity: item.quantity || 1,
           unitPrice: item.price,
@@ -159,25 +168,42 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
 
   const removeFromCart = async (id: string) => {
     const itemToRemove = cartItems.find((item) => item.id === id);
+    // Use serverId for database operations if available, otherwise skip backend call
+    const dbItemId = itemToRemove?.serverId;
 
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-
-    if (effectiveUserId && !isGuest && itemToRemove) {
-      try {
-        setIsSyncing(true);
-        const cartId = await ensureCartId();
-        await removeCartItemMutation.mutateAsync({
-          cartId: parseInt(cartId, 10),
-          itemId: parseInt(id, 10) || 0,
-        });
+    if (effectiveUserId && !isGuest) {
+      if (dbItemId) {
+        try {
+          setIsSyncing(true);
+          const cartId = await ensureCartId();
+          await removeCartItemMutation.mutateAsync({
+            cartId: parseInt(cartId, 10),
+            itemId: dbItemId,
+          });
+          // Only remove locally after backend succeeds
+          setCartItems((prev) => prev.filter((item) => item.id !== id));
+          message.success("Item removed from cart");
+        } catch (error: any) {
+          // If item not found in backend, still remove locally (item may have been already deleted)
+          if (error?.message?.includes("not found") || error?.message?.includes("Cart item not found")) {
+            setCartItems((prev) => prev.filter((item) => item.id !== id));
+            message.success("Item removed from cart");
+          } else {
+            message.error("Failed to remove item from cart");
+            console.error("Remove from cart failed:", error);
+          }
+        } finally {
+          setIsSyncing(false);
+        }
+      } else if (itemToRemove) {
+        // Item was locally added (no serverId), remove locally only
+        setCartItems((prev) => prev.filter((item) => item.id !== id));
         message.success("Item removed from cart");
-      } catch (error) {
-        setCartItems((prev) => [...prev, itemToRemove]);
-        message.error("Failed to remove item from cart");
-        console.error("Remove from cart failed:", error);
-      } finally {
-        setIsSyncing(false);
       }
+    } else {
+      // No backend, just remove locally
+      setCartItems((prev) => prev.filter((item) => item.id !== id));
+      message.success("Item removed from cart");
     }
   };
 
@@ -193,6 +219,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
     if (quantity < 1) return;
 
     const previousItems = [...cartItems];
+    const itemToUpdate = cartItems.find((item) => item.id === id);
+    // Use serverId for database operations if available, otherwise use id
+    const dbItemId = itemToUpdate?.serverId ?? (parseInt(id, 10) || 0);
 
     setCartItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, quantity } : item))
@@ -204,7 +233,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
         const cartId = await ensureCartId();
         await updateCartItemMutation.mutateAsync({
           cartId: parseInt(cartId, 10),
-          itemId: parseInt(id, 10) || 0,
+          itemId: dbItemId,
           quantity,
         });
       } catch (error) {
@@ -221,6 +250,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
     <CartContext.Provider
       value={{
         cartItems,
+        serverCartId,
         addToCart,
         removeFromCart,
         clearCart,

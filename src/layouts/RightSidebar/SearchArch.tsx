@@ -16,6 +16,7 @@ interface SearchArchProps {
   apiResponse?: TransformedApiResponse | null;
   isLoading?: boolean;
   error?: Error | null;
+  selectedSatellites?: string[];
   onResultHover?: (
     result: {
       id: string;
@@ -32,11 +33,19 @@ const SearchArch: React.FC<SearchArchProps> = ({
   apiResponse,
   isLoading = false,
   error = null,
+  selectedSatellites = [],
   onResultHover,
   onResultClick,
 }) => {
   const [activeResultId, setActiveResultId] = useState<string | null>(null);
   const { addToCart, isInCart } = useCart();
+
+  // Map satellite IDs to STAC type names
+  const satelliteTypeMap: Record<string, string> = {
+    "1": "THEOS 2",
+    "2": "Sentinel",
+    "3": "Landsat",
+  };
 
   if (isLoading) {
     return (
@@ -215,7 +224,9 @@ const SearchArch: React.FC<SearchArchProps> = ({
                       color: "#E0E0E0",
                     }}
                   >
-                    THEOS2
+                    {selectedSatellites.length === 1
+                      ? satelliteTypeMap[selectedSatellites[0]] || "Unknown"
+                      : selectedSatellites.map(id => satelliteTypeMap[id] || id).join(" + ") || "Unknown"}
                   </Text>
                   <div
                     style={{ display: "flex", gap: "12px", marginTop: "6px" }}
@@ -287,8 +298,13 @@ const SearchArch: React.FC<SearchArchProps> = ({
                   icon={<PlusOutlined />}
                   onClick={(e) => {
                     e.stopPropagation();
+                    // Determine satellite name from selected satellites
+                    const satelliteName = selectedSatellites.length === 1
+                      ? satelliteTypeMap[selectedSatellites[0]] || "THEOS 2"
+                      : selectedSatellites.map(id => satelliteTypeMap[id] || "Unknown").join(" + ");
                     const cartItem = {
                       name: result.name,
+                      satelliteName,
                       date: result.timestamp,
                       cloud:
                         typeof result.value === "number" ? result.value : 0,

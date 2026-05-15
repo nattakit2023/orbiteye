@@ -170,6 +170,7 @@ export type AddCartItemInput = {
   imageUrl?: InputMaybe<Scalars['String']['input']>;
   productName: Scalars['String']['input'];
   quantity: Scalars['Int']['input'];
+  satelliteName?: InputMaybe<Scalars['String']['input']>;
   unitPrice: Scalars['Float']['input'];
 };
 
@@ -338,6 +339,7 @@ export type CartItem = {
   imageUrl?: Maybe<Scalars['String']['output']>;
   productName: Scalars['String']['output'];
   quantity: Scalars['Int']['output'];
+  satelliteName?: Maybe<Scalars['String']['output']>;
   unitPrice: Scalars['Float']['output'];
 };
 
@@ -533,7 +535,7 @@ export type MutationRoot = {
   logout: AuthMutation;
   refreshToken: AuthMutation;
   register: AuthMutation;
-  removeCartItem: CartMutation;
+  removeCartItem: Cart;
   requestPasswordReset: AuthMutation;
   resetPassword: AuthMutation;
   updateCartItem: CartMutation;
@@ -550,6 +552,11 @@ export type MutationRootAddCartItemArgs = {
 
 export type MutationRootCreateCartArgs = {
   input: CreateCartInput;
+};
+
+
+export type MutationRootRemoveCartItemArgs = {
+  input: RemoveCartItemInput;
 };
 
 /** Order GraphQL type */

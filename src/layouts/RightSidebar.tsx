@@ -15,6 +15,7 @@ interface RightSidebarProps {
   collapsed: boolean;
   onCollapse: (collapsed: boolean) => void;
   mode?: RightSidebarMode;
+  selectedSatellites?: string[];
   apiResponse?: TransformedApiResponse | null;
   isLoading?: boolean;
   error?: Error | null;
@@ -32,6 +33,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   collapsed,
   onCollapse,
   mode = "search",
+  selectedSatellites = [],
   apiResponse,
   isLoading = false,
   error = null,
@@ -100,6 +102,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                 apiResponse={apiResponse}
                 isLoading={isLoading}
                 error={error}
+                selectedSatellites={selectedSatellites}
                 onResultHover={onResultHover}
                 onResultClick={onResultClick}
               />

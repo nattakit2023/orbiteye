@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
   const [rightSidebarMode, setRightSidebarMode] = useState<RightSidebarMode>("search");
   const [featureSidebarOpen, setFeatureSidebarOpen] = useState(false);
+  const [selectedSatellites, setSelectedSatellites] = useState<string[]>(["1"]);
 
   // Mock user profile data for feature sidebar
   const [userProfile] = useState({
@@ -144,6 +145,8 @@ const App: React.FC = () => {
               onAnalyze={handleAnalyze}
               drawnShape={drawnShape}
               onClearDrawnShape={() => setDrawnShape(null)}
+              selectedSatellites={selectedSatellites}
+              onSelectSatellite={setSelectedSatellites}
             />
           </div>
         )}
@@ -185,6 +188,7 @@ const App: React.FC = () => {
               collapsed={false}
               onCollapse={() => setRightSidebarOpen(false)}
               mode={rightSidebarMode}
+              selectedSatellites={selectedSatellites}
               apiResponse={apiResponse}
               isLoading={isLoading}
               error={error}

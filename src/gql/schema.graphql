@@ -132,6 +132,7 @@ input AddCartItemInput {
   imageUrl: String
   productName: String!
   quantity: Int!
+  satelliteName: String
   unitPrice: Float!
 }
 
@@ -301,6 +302,7 @@ type CartItem {
   imageUrl: String
   productName: String!
   quantity: Int!
+  satelliteName: String
   unitPrice: Float!
 }
 
@@ -496,7 +498,10 @@ type MutationRoot {
   logout: AuthMutation!
   refreshToken: AuthMutation!
   register: AuthMutation!
-  removeCartItem: CartMutation!
+  removeCartItem(
+    """Remove item input"""
+    input: RemoveCartItemInput!
+  ): Cart!
   requestPasswordReset: AuthMutation!
   resetPassword: AuthMutation!
   updateCartItem: CartMutation!

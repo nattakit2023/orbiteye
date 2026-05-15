@@ -36,6 +36,8 @@ interface SidebarProps {
     area?: number;
   } | null;
   onClearDrawnShape?: () => void;
+  selectedSatellites?: string[];
+  onSelectSatellite?: (selected: string[]) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -45,14 +47,22 @@ const Sidebar: React.FC<SidebarProps> = ({
   onAnalyze,
   drawnShape,
   onClearDrawnShape,
+  selectedSatellites = ["1"],
+  onSelectSatellite,
 }) => {
-  const [selectedSatellites, setSelectedSatellites] = useState<string[]>(["1"]);
+  const [internalSelectedSatellites, setInternalSelectedSatellites] = useState<string[]>(selectedSatellites);
   const [selectedDates, setSelectedDates] = useState<[string, string] | null>(null);
+  const [selectedCloud, setSelectedCloud] = useState<number>(100);
   const [currentShape, setCurrentShape] = useState<{
     type: "circle" | "polygon" | "rectangle" | null;
     coordinates: Array<[number, number]>;
     radius?: number;
   } | null>(null);
+
+  // Sync internal state when prop changes from parent
+  useEffect(() => {
+    setInternalSelectedSatellites(selectedSatellites);
+  }, [selectedSatellites]);
 
   useEffect(() => {
     const handleShapeCompleted = (event: Event) => {
@@ -135,7 +145,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       filter: {
         op: "and",
         args: [
-          { op: "<=", args: [{ property: "cloudNotation" }, 100] },
+          { op: "<=", args: [{ property: "cloudNotation" }, selectedCloud] },
           { op: "<", args: [{ property: "globalIncidence" }, 50] },
         ],
       },
@@ -149,15 +159,19 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleSelectSatellite = (itemId: string) => {
-    setSelectedSatellites((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId],
-    );
+    const newSelection = internalSelectedSatellites.includes(itemId)
+      ? internalSelectedSatellites.filter((id) => id !== itemId)
+      : [...internalSelectedSatellites, itemId];
+    setInternalSelectedSatellites(newSelection);
+    onSelectSatellite?.(newSelection);
   };
 
   const handleDateChange = (dates: unknown, dateStrings: [string, string]) => {
     setSelectedDates(dateStrings);
+  };
+
+  const handleCloudChange = (value: number) => {
+    setSelectedCloud(value);
   };
 
   if (collapsed) return null;
@@ -245,10 +259,10 @@ const Sidebar: React.FC<SidebarProps> = ({
             </Col>
           </Row>
           <Row style={{ marginBottom: "10px" }}>
-            <CloudQuality />
+            <CloudQuality onCloudChange={handleCloudChange} selectedCloud={selectedCloud} />
           </Row>
           <Row style={{ marginBottom: "10px" }}>
-            <Satellite onSelectItem={handleSelectSatellite} selectedItems={selectedSatellites} />
+            <Satellite onSelectItem={handleSelectSatellite} selectedItems={internalSelectedSatellites} />
           </Row>
         </Flex>
       </div>

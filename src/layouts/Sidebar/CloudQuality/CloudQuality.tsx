@@ -3,19 +3,19 @@ import Slider from "antd/es/slider";
 import { CloudOutlined } from "@ant-design/icons";
 
 interface CloudQualityProps {
-  onSelectItem?: (itemId: string) => void;
-  selectedItems?: string[];
+  onCloudChange?: (value: number) => void;
+  selectedCloud?: number;
 }
 
 const CloudQuality: React.FC<CloudQualityProps> = ({
-  onSelectItem,
-  selectedItems = [],
+  onCloudChange,
+  selectedCloud,
 }) => {
-  const [sliderValue, setSliderValue] = useState<number>(50);
+  const [sliderValue, setSliderValue] = useState<number>(selectedCloud ?? 50);
 
   const handleSliderChange = (value: number) => {
     setSliderValue(value);
-    onSelectItem?.(String(value));
+    onCloudChange?.(value);
   };
 
   return (
