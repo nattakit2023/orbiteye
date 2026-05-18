@@ -325,8 +325,13 @@ export type Cart = {
 
 export type CartConversionResult = {
   __typename?: 'CartConversionResult';
+  amount?: Maybe<Scalars['Float']['output']>;
+  chargeId?: Maybe<Scalars['String']['output']>;
+  expiresAt?: Maybe<Scalars['Int']['output']>;
   message?: Maybe<Scalars['String']['output']>;
   orderId?: Maybe<Scalars['Int']['output']>;
+  paymentRequired: Scalars['Boolean']['output'];
+  qrCodeUrl?: Maybe<Scalars['String']['output']>;
   success: Scalars['Boolean']['output'];
 };
 
@@ -450,6 +455,8 @@ export type CartSummary = {
 export type ConvertCartToOrderInput = {
   billingAddress?: InputMaybe<Scalars['String']['input']>;
   cartId: Scalars['Int']['input'];
+  /** URL to redirect after payment completion (for Omise) */
+  returnUrl?: InputMaybe<Scalars['String']['input']>;
   shippingAddress?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -522,7 +529,7 @@ export type MutationRoot = {
   addCartItem: Cart;
   cancelOrder: OrderMutation;
   changePassword: AuthMutation;
-  convertCartToOrder: CartMutation;
+  convertCartToOrder: CartConversionResult;
   /** Create cart mutation */
   createCart: Cart;
   /** Delegate to order mutations */
@@ -547,6 +554,11 @@ export type MutationRoot = {
 
 export type MutationRootAddCartItemArgs = {
   input: AddCartItemInput;
+};
+
+
+export type MutationRootConvertCartToOrderArgs = {
+  input: ConvertCartToOrderInput;
 };
 
 

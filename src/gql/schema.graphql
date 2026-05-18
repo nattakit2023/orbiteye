@@ -289,8 +289,13 @@ type Cart {
 }
 
 type CartConversionResult {
+  amount: Float
+  chargeId: String
+  expiresAt: Int
   message: String
   orderId: Int
+  paymentRequired: Boolean!
+  qrCodeUrl: String
   success: Boolean!
 }
 
@@ -394,6 +399,9 @@ type CartSummary {
 input ConvertCartToOrderInput {
   billingAddress: String
   cartId: Int!
+
+  """URL to redirect after payment completion (for Omise)"""
+  returnUrl: String
   shippingAddress: String
 }
 
@@ -478,7 +486,10 @@ type MutationRoot {
   ): Cart!
   cancelOrder: OrderMutation!
   changePassword: AuthMutation!
-  convertCartToOrder: CartMutation!
+  convertCartToOrder(
+    """Conversion input"""
+    input: ConvertCartToOrderInput!
+  ): CartConversionResult!
 
   """Create cart mutation"""
   createCart(
