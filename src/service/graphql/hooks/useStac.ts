@@ -52,8 +52,8 @@ export interface AnalysisResult {
 	id: string;
 	name: string;
 	value: number;
-	coordinates?: [number, number] | [number, number][];
-	timestamp: number;
+	coordinates?: number[];  // Flat array [lng, lat, ...] or [lng, lat, z, ...]
+	timestamp?: string;        // ISO 8601 string
 	imageData?: ImageAsset;
 }
 

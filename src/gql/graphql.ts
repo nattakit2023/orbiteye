@@ -176,11 +176,11 @@ export type AddCartItemInput = {
 
 export type AnalysisResultGraphQl = {
   __typename?: 'AnalysisResultGraphQL';
-  coordinates?: Maybe<Scalars['JSON']['output']>;
+  coordinates?: Maybe<Array<Scalars['Float']['output']>>;
   id: Scalars['String']['output'];
   imageData?: Maybe<ImageAssetGraphQl>;
   name: Scalars['String']['output'];
-  timestamp: Scalars['Int']['output'];
+  timestamp?: Maybe<Scalars['String']['output']>;
   value: Scalars['Float']['output'];
 };
 

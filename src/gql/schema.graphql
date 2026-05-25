@@ -137,11 +137,11 @@ input AddCartItemInput {
 }
 
 type AnalysisResultGraphQL {
-  coordinates: JSON
+  coordinates: [Float!]
   id: String!
   imageData: ImageAssetGraphQL
   name: String!
-  timestamp: Int!
+  timestamp: String
   value: Float!
 }
 
