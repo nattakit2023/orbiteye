@@ -5,6 +5,7 @@ import {
   EnvironmentOutlined,
   CalendarOutlined,
   PlusOutlined,
+  ExpandOutlined,
 } from "@ant-design/icons";
 import { Button, Card, Spin, Typography, Alert, Empty } from "antd";
 import { TransformedApiResponse } from "@/service/graphql/hooks/useStac";
@@ -20,12 +21,22 @@ interface SearchArchProps {
   onResultHover?: (
     result: {
       id: string;
-      coordinates?: [number, number] | [number, number][];
+      name?: string;
+      coordinates?: number[];
+      imageData?: {
+        thumbnailUrl?: string;
+        downloadUrl?: string;
+      };
     } | null,
   ) => void;
   onResultClick?: (result: {
     id: string;
-    coordinates?: [number, number] | [number, number][];
+    name?: string;
+    coordinates?: number[];
+    imageData?: {
+      thumbnailUrl?: string;
+      downloadUrl?: string;
+    };
   }) => void;
 }
 
@@ -175,18 +186,56 @@ const SearchArch: React.FC<SearchArchProps> = ({
                     flexShrink: 0,
                     background: "#0d1117",
                     border: "1px solid #30363d",
+                    position: "relative",
+                    cursor: "pointer",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onResultClick?.(result);
                   }}
                 >
                   {result.imageData?.thumbnailUrl ? (
-                    <img
-                      src={result.imageData.thumbnailUrl}
-                      alt={result.name}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
+                    <>
+                      <img
+                        src={result.imageData.thumbnailUrl}
+                        alt={result.name}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      {/* Red hover overlay */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: "rgba(255, 0, 0, 0.3)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          opacity: 0,
+                          transition: "opacity 0.2s ease",
+                        }}
+                        className="thumbnail-overlay"
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = "1";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = "0";
+                        }}
+                      >
+                        <ExpandOutlined
+                          style={{
+                            fontSize: "20px",
+                            color: "#fff",
+                          }}
+                        />
+                      </div>
+                    </>
                   ) : (
                     <div
                       style={{
@@ -215,7 +264,7 @@ const SearchArch: React.FC<SearchArchProps> = ({
                     }}
                     ellipsis
                   >
-                    {result.name}
+                    {result.id}
                   </Text>
                   <Text
                     style={{
@@ -224,9 +273,7 @@ const SearchArch: React.FC<SearchArchProps> = ({
                       color: "#E0E0E0",
                     }}
                   >
-                    {selectedSatellites.length === 1
-                      ? satelliteTypeMap[selectedSatellites[0]] || "Unknown"
-                      : selectedSatellites.map(id => satelliteTypeMap[id] || id).join(" + ") || "Unknown"}
+                    {result.name.toUpperCase()}
                   </Text>
                   <div
                     style={{ display: "flex", gap: "12px", marginTop: "6px" }}

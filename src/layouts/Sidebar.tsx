@@ -97,8 +97,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     // Map satellite IDs to STAC API types
     const satelliteTypeMap: Record<string, string> = {
       "1": "theos2",
-      "2": "sentinel",
-      "3": "landsat",
+      "2": "sentinel2",
+      "3": "landsat8",
     };
 
     const stacType = selectedSatellites

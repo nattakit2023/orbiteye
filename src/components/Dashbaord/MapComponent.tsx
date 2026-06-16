@@ -5,6 +5,7 @@ import "leaflet/dist/leaflet.css";
 import Card from "antd/es/card";
 import Typography from "antd/es/typography";
 import { calculatePolygonArea } from "../../utils/geometry";
+import ImageSliderOverlay from "./ImageSliderOverlay";
 
 // Fix default marker icon issue with react-leaflet
 delete (L.Icon.Default.prototype as { _getIconUrl?: () => void })._getIconUrl;
@@ -30,7 +31,9 @@ function FeatureLayer({
   clickedResult,
 }: FeatureLayerProps) {
   const map = useMap();
-  const featureLayersRef = useRef<(L.Polygon | L.CircleMarker)[]>([]);
+  const featureLayersRef = useRef<(L.Polygon | L.CircleMarker | L.ImageOverlay)[]>([]);
+  const imageOverlayRef = useRef<L.ImageOverlay | null>(null);
+
 
   // Render features on map
   useEffect(() => {
@@ -39,6 +42,12 @@ function FeatureLayer({
       map.removeLayer(layer);
     });
     featureLayersRef.current = [];
+
+    // Clear image overlay if exists
+    if (imageOverlayRef.current) {
+      map.removeLayer(imageOverlayRef.current);
+      imageOverlayRef.current = null;
+    }
 
     // Determine which result(s) to render - only show when hovered or clicked
     const activeResult = clickedResult || hoveredResult;
@@ -56,12 +65,14 @@ function FeatureLayer({
     resultsToRender.forEach((result) => {
       if (!result.coordinates) return;
 
+
       // Hover takes precedence over click
       const isHovered = hoveredResult?.id === result.id;
       const isClicked = clickedResult?.id === result.id && !isHovered;
 
-      // Check if coordinates is an array (polygon/linestring) or single point
+      // Check if coordinates is an array (polygon/linestring), bbox, or single point
       const isCoordinateArray = Array.isArray(result.coordinates[0]);
+
 
       if (isCoordinateArray) {
         // Polygon/LineString - render as polygon
@@ -76,6 +87,41 @@ function FeatureLayer({
         }).addTo(map);
 
         featureLayersRef.current.push(polygon);
+      } else if (result.coordinates.length === 4) {
+        // Bbox [minX, minY, maxX, maxY] - render as rectangle
+        // minX=minLng, minY=minLat, maxX=maxLng, maxY=maxLat
+        const [minX, minY, maxX, maxY] = result.coordinates as [number, number, number, number];
+        const bboxCoords: [number, number][] = [
+          [minY, minX], // bottom-left [lat, lng]
+          [minY, maxX], // bottom-right
+          [maxY, maxX], // top-right
+          [maxY, minX], // top-left
+          [minY, minX], // close polygon
+        ];
+
+        // If clicked (not just hovered) and has image, show image overlay
+        if (isClicked && result.imageData?.thumbnailUrl) {
+          const imageOverlay = L.imageOverlay(result.imageData.thumbnailUrl, [[minY, minX], [maxY, maxX]], {
+            opacity: 0.9,
+            interactive: true,
+          }).addTo(map);
+          imageOverlayRef.current = imageOverlay;
+          featureLayersRef.current.push(imageOverlay);
+        }
+
+        // Show bbox rectangle outline
+        const bboxPolygon = L.polygon(bboxCoords, {
+          fillColor: isHovered
+            ? "rgba(255, 77, 79, 0.3)"
+            : "rgba(24, 144, 255, 0.2)",
+          color: isHovered ? "#ff4d4f" : "#1890ff",
+          weight: isHovered ? 3 : 2,
+          opacity: 1,
+          fillOpacity: isHovered ? 0.4 : 0.2,
+        }).addTo(map);
+
+
+        featureLayersRef.current.push(bboxPolygon);
       } else {
         // Single point - render as circle marker
         const [lat, lng] = result.coordinates as [number, number];
@@ -97,6 +143,10 @@ function FeatureLayer({
         map.removeLayer(layer);
       });
       featureLayersRef.current = [];
+      if (imageOverlayRef.current) {
+        map.removeLayer(imageOverlayRef.current);
+        imageOverlayRef.current = null;
+      }
     };
   }, [results, hoveredResult, clickedResult, map]);
 
@@ -123,18 +173,23 @@ function FeatureCoordinatesDisplay({
     return null;
   }
 
-  // Check if coordinates is an array (polygon) or single point
+  // Check if coordinates is an array (polygon), bbox, or single point
   const isCoordinateArray = Array.isArray(activeResult.coordinates[0]);
 
   // Format coordinates like drawn shapes
   let coordsStr = "";
   if (isCoordinateArray) {
+    // Polygon - array of [lat, lng] pairs
     coordsStr = (activeResult.coordinates as [number, number][])
       .map(
         (coord: [number, number]) =>
-          `${coord[0].toFixed(6)},${coord[1].toFixed(6)}`,
+          `${coord[0].toFixed(4)},${coord[1].toFixed(4)}`,
       )
       .join(" | ");
+  } else if (activeResult.coordinates.length === 4) {
+    // Bbox [minX, minY, maxX, maxY] - show as bounding box
+    const [minX, minY, maxX, maxY] = activeResult.coordinates as [number, number, number, number];
+    coordsStr = `Bbox: ${minY.toFixed(4)},${minX.toFixed(4)} → ${maxY.toFixed(4)},${maxX.toFixed(4)}`;
   } else {
     // Single point
     const [lat, lng] = activeResult.coordinates as [number, number];
@@ -1033,17 +1088,22 @@ interface FeatureZoomHandlerProps {
 
 function FeatureZoomHandler({ clickedResult }: FeatureZoomHandlerProps) {
   const map = useMap();
-
+  console.log(clickedResult);
   useEffect(() => {
     if (clickedResult?.coordinates) {
       const coords = clickedResult.coordinates;
 
-      // Check if coordinates is a single point or an array of points
+      // Check if coordinates is a single point, bbox, or array of points
       if (Array.isArray(coords)) {
         // Check if it's a point [lat, lng] or polygon/line [[lat, lng], ...]
         if (Array.isArray(coords[0])) {
           // Array of points - use fitBounds for polygons, lines, etc.
           const bounds = L.latLngBounds(coords as [number, number][]);
+          map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+        } else if (coords.length === 4) {
+          // Bbox [minX, minY, maxX, maxY] - use fitBounds
+          const [minX, minY, maxX, maxY] = coords;
+          const bounds = L.latLngBounds([[minY, minX], [maxY, maxX]]);
           map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
         } else {
           // Single point - use setView
@@ -1361,6 +1421,16 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
       {/* Feature Zoom Handler - Zooms to clicked feature */}
       <FeatureZoomHandler clickedResult={clickedResult} />
+
+      {/* Image Slider Overlay - Slider on image to reveal/hide parts */}
+      {clickedResult?.imageData?.thumbnailUrl && clickedResult?.bbox && (
+        <ImageSliderOverlay
+          imageUrl={clickedResult.imageData.thumbnailUrl}
+          bbox={clickedResult.bbox}
+          onClose={() => window.dispatchEvent(new CustomEvent("clearClickedResult"))}
+        />
+      )}
+
 
       {/* Render all markers */}
       {/*{markers.map((position, idx) => (

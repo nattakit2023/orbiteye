@@ -14,8 +14,13 @@ import { analyzeShape, TransformedApiResponse } from "@/service/graphql/hooks/us
 // Type definitions for result data
 interface ResultData {
   id: string;
+  name?: string;
   coordinates?: [number, number] | [number, number][];
   timestamp?: number;
+  imageData?: {
+    thumbnailUrl?: string;
+    downloadUrl?: string;
+  };
 }
 
 const App: React.FC = () => {
@@ -95,10 +100,16 @@ const App: React.FC = () => {
   const handleResultClick = (result: ResultData) => {
     console.log("App: Result clicked:", result);
     setClickedResult(result);
-    setTimeout(() => {
-      setClickedResult(null);
-    }, 500);
   };
+
+  // Listen for clearClickedResult event from MapComponent overlay
+  useEffect(() => {
+    const handleClearClickedResult = () => {
+      setClickedResult(null);
+    };
+    window.addEventListener("clearClickedResult", handleClearClickedResult);
+    return () => window.removeEventListener("clearClickedResult", handleClearClickedResult);
+  }, []);
 
   // Open right sidebar in search mode
   const openRightSidebarSearch = () => {
