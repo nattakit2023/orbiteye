@@ -5,7 +5,9 @@ import "leaflet/dist/leaflet.css";
 import Card from "antd/es/card";
 import Typography from "antd/es/typography";
 import { calculatePolygonArea } from "../../utils/geometry";
+import ImageOverlayManager from "./ImageOverlayManager";
 import ImageSliderOverlay from "./ImageSliderOverlay";
+import MapEventDispatcher from "./MapEventDispatcher";
 
 // Fix default marker icon issue with react-leaflet
 delete (L.Icon.Default.prototype as { _getIconUrl?: () => void })._getIconUrl;
@@ -31,8 +33,7 @@ function FeatureLayer({
   clickedResult,
 }: FeatureLayerProps) {
   const map = useMap();
-  const featureLayersRef = useRef<(L.Polygon | L.CircleMarker | L.ImageOverlay)[]>([]);
-  const imageOverlayRef = useRef<L.ImageOverlay | null>(null);
+  const featureLayersRef = useRef<(L.Polygon | L.CircleMarker)[]>([]);
 
 
   // Render features on map
@@ -42,12 +43,6 @@ function FeatureLayer({
       map.removeLayer(layer);
     });
     featureLayersRef.current = [];
-
-    // Clear image overlay if exists
-    if (imageOverlayRef.current) {
-      map.removeLayer(imageOverlayRef.current);
-      imageOverlayRef.current = null;
-    }
 
     // Determine which result(s) to render - only show when hovered or clicked
     const activeResult = clickedResult || hoveredResult;
@@ -99,15 +94,9 @@ function FeatureLayer({
           [minY, minX], // close polygon
         ];
 
-        // If clicked (not just hovered) and has image, show image overlay
-        if (isClicked && result.imageData?.thumbnailUrl) {
-          const imageOverlay = L.imageOverlay(result.imageData.thumbnailUrl, [[minY, minX], [maxY, maxX]], {
-            opacity: 0.9,
-            interactive: true,
-          }).addTo(map);
-          imageOverlayRef.current = imageOverlay;
-          featureLayersRef.current.push(imageOverlay);
-        }
+        // Image overlay is rendered by <ImageOverlayManager /> in MapComponent
+        // (single source of truth so the comparison slider's clip-path works
+        // correctly). FeatureLayer only draws the bbox outline.
 
         // Show bbox rectangle outline
         const bboxPolygon = L.polygon(bboxCoords, {
@@ -143,10 +132,6 @@ function FeatureLayer({
         map.removeLayer(layer);
       });
       featureLayersRef.current = [];
-      if (imageOverlayRef.current) {
-        map.removeLayer(imageOverlayRef.current);
-        imageOverlayRef.current = null;
-      }
     };
   }, [results, hoveredResult, clickedResult, map]);
 
@@ -1392,6 +1377,9 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       zoomControl={false}
       style={{ width: "100%", height: "100%" }}
     >
+      {/* Map Event Dispatcher - dispatches map instance */}
+      <MapEventDispatcher />
+
       {/* TileLayer using Leaflet */}
                   <TileLayerControl activeLayer={activeLayer} />
 
@@ -1422,15 +1410,20 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       {/* Feature Zoom Handler - Zooms to clicked feature */}
       <FeatureZoomHandler clickedResult={clickedResult} />
 
-      {/* Image Slider Overlay - Slider on image to reveal/hide parts */}
-      {clickedResult?.imageData?.thumbnailUrl && clickedResult?.bbox && (
-        <ImageSliderOverlay
-          imageUrl={clickedResult.imageData.thumbnailUrl}
-          bbox={clickedResult.bbox}
-          onClose={() => window.dispatchEvent(new CustomEvent("clearClickedResult"))}
-        />
+      {/* Image Overlay Manager - Shows image on map */}
+      {clickedResult?.imageData?.thumbnailUrl && clickedResult?.coordinates && (
+        <>
+          <ImageOverlayManager
+            imageUrl={clickedResult.imageData.thumbnailUrl}
+            bbox={clickedResult.coordinates}
+            opacity={100}
+          />
+          <ImageSliderOverlay
+            bbox={clickedResult.coordinates}
+            onClose={() => window.dispatchEvent(new CustomEvent("clearClickedResult"))}
+          />
+        </>
       )}
-
 
       {/* Render all markers */}
       {/*{markers.map((position, idx) => (

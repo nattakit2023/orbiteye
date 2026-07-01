@@ -12,8 +12,9 @@ const Satellite: React.FC<SatelliteProps> = ({
 }) => {
   const satelliteData = [
     { id: "1", label: "THEOS 2", value: "Thai Earth Observation 2" },
-    { id: "2", label: "Sentinel 2", value: "CDSE Satellite 2" },
-    { id: "3", label: "Landsat 8", value: "CDSE Satellite 8" },
+    { id: "2", label: "Sentinel 1", value: "CDSE Satellite 1" },
+    { id: "3", label: "Sentinel 2", value: "CDSE Satellite 2" },
+    { id: "4", label: "Landsat 8", value: "CDSE Satellite 8" },
   ];
 
   return (

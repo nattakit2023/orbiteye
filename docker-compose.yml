@@ -1,0 +1,37 @@
+# =============================================================
+# docker-compose.yml — Orbiteye Frontend
+# ใช้สำหรับรัน frontend คู่กับ backend ที่อยู่ service ชื่อ "backend"
+# =============================================================
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # URL ที่ Vite จะฝังลงใน bundle ตอน build (ใช้ใน browser)
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:4321}
+        VITE_BASE_URL: ${VITE_BASE_URL:-http://localhost:4321}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-your-google-client-id}
+    image: orbiteye-frontend:latest
+    container_name: orbiteye-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"   # host:container
+    environment:
+      # URL ที่ nginx จะใช้ proxy /graphql → backend
+      # ถ้ารัน backend เป็นอีก service ใช้ชื่อ service เป็น hostname ได้เลย
+      BACKEND_URL: ${BACKEND_URL:-http://backend:4321}
+    # depends_on:
+    #   - backend   # uncomment ถ้า backend service ชื่อ backend อยู่ใน compose นี้
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - orbiteye-net
+
+networks:
+  orbiteye-net:
+    driver: bridge
