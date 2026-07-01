@@ -64,7 +64,7 @@ RUN chown -R nginx:nginx /usr/share/nginx/html && \
 # ใช้ non-root user เพื่อความปลอดภัย
 USER nginx
 
-EXPOSE 80
+EXPOSE 3000
 
 # Healthcheck เรียก /healthz ที่เราจะเพิ่มใน nginx.conf
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \

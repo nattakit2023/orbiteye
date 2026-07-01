@@ -11,6 +11,20 @@ const { Sider } = Layout;
 
 export type RightSidebarMode = "search" | "cart" | "order";
 
+// Shape of a single archive result. Must stay compatible with SearchArch's
+// expectations -- `coordinates` may be a single [lng,lat] pair or an array of
+// such pairs (Polygon). Defined here as a local alias to avoid a circular
+// import between RightSidebar and RightSidebar/SearchArch.
+type ArchiveResult = {
+  id: string;
+  name?: string;
+  coordinates?: number[] | number[][];
+  imageData?: {
+    thumbnailUrl?: string;
+    downloadUrl?: string;
+  };
+};
+
 interface RightSidebarProps {
   collapsed: boolean;
   onCollapse: (collapsed: boolean) => void;
@@ -19,14 +33,8 @@ interface RightSidebarProps {
   apiResponse?: TransformedApiResponse | null;
   isLoading?: boolean;
   error?: Error | null;
-  onResultHover?: (result: {
-    id: string;
-    coordinates?: number[];
-  } | null) => void;
-  onResultClick?: (result: {
-    id: string;
-    coordinates?: number[];
-  }) => void;
+  onResultHover?: (result: ArchiveResult | null) => void;
+  onResultClick?: (result: ArchiveResult) => void;
 }
 
 const RightSidebar: React.FC<RightSidebarProps> = ({
