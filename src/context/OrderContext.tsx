@@ -1,31 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import type { CartItem } from "./CartContext";
-
-export interface OrderItem {
-  id: string;
-  items: CartItem[];
-  totalAmount: number;
-  orderDate: number;
-  status: "completed" | "processing" | "pending" | "cancelled";
-}
-
-interface OrderContextType {
-  orders: OrderItem[];
-  addOrder: (items: CartItem[], totalAmount: number) => void;
-  getOrders: () => OrderItem[];
-  clearOrders: () => void;
-  getOrderById: (id: string) => OrderItem | undefined;
-}
-
-const OrderContext = createContext<OrderContextType | undefined>(undefined);
-
-export const useOrder = () => {
-  const context = useContext(OrderContext);
-  if (!context) {
-    throw new Error("useOrder must be used within an OrderProvider");
-  }
-  return context;
-};
+import React, { useState, ReactNode } from "react";
+import { OrderContext } from "./OrderContextValue";
+import type { OrderItem } from "./OrderContextValue";
 
 interface OrderProviderProps {
   children: ReactNode;
@@ -34,7 +9,7 @@ interface OrderProviderProps {
 export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
   const [orders, setOrders] = useState<OrderItem[]>([]);
 
-  const addOrder = (items: CartItem[], totalAmount: number) => {
+  const addOrder = (items: OrderItem["items"], totalAmount: number) => {
     const newOrder: OrderItem = {
       id: `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       items: [...items],
@@ -66,3 +41,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     </OrderContext.Provider>
   );
 };
+
+// Re-export the OrderItem type so existing
+// `import type { OrderItem } from "@/context/OrderContext"` paths keep working.
+export type { OrderItem } from "./OrderContextValue";

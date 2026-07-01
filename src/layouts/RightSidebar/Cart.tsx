@@ -5,7 +5,7 @@ import {
   ShoppingOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/context/CartContextValue";
 import { useConvertCartToOrder } from "@/service/graphql/hooks/useOrder";
 import { ArrowRight } from "lucide-react";
 import { message } from "antd";

@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Card, Typography, Empty, Flex, Tag } from "antd";
 import { ShoppingOutlined, CheckCircleOutlined, ClockCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
-import { useOrder } from "@/context/OrderContext";
+import { useOrder } from "@/context/OrderContextValue";
 
 const { Text } = Typography;
 

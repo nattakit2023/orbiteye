@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import { Button, Card, Spin, Typography, Alert, Empty } from "antd";
 import { TransformedApiResponse } from "@/service/graphql/hooks/useStac";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/context/CartContextValue";
 
 const { Text } = Typography;
 
@@ -352,7 +352,11 @@ const SearchArch: React.FC<SearchArchProps> = ({
                     const cartItem = {
                       name: result.name,
                       satelliteName,
-                      date: result.timestamp,
+                      // result.timestamp is an ISO string from the STAC API;
+                      // CartItem.date is a number (ms epoch), so convert it.
+                      date: result.timestamp
+                        ? new Date(result.timestamp).getTime()
+                        : Date.now(),
                       cloud:
                         typeof result.value === "number" ? result.value : 0,
                       quality: "Excellent",

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import DatePicker from "antd/es/date-picker";
 import { CalendarOutlined } from "@ant-design/icons";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 
 interface DateSelectionProps {
   onDateChange?: (dates: unknown, dateStrings: [string, string]) => void;
@@ -21,10 +21,7 @@ const DateSelection: React.FC<DateSelectionProps> = ({ onDateChange }) => {
       );
     } else if (date) {
       // Only start date → from start to present (use ".." for open end)
-      onDateChange?.(
-        [date, null],
-        [date.format("YYYY-MM-DD"), ".."],
-      );
+      onDateChange?.([date, null], [date.format("YYYY-MM-DD"), ".."]);
     }
   };
 
@@ -38,10 +35,7 @@ const DateSelection: React.FC<DateSelectionProps> = ({ onDateChange }) => {
       );
     } else if (date) {
       // Only end date → from beginning to end (use ".." for open start)
-      onDateChange?.(
-        [null, date],
-        ["..", date.format("YYYY-MM-DD")],
-      );
+      onDateChange?.([null, date], ["..", date.format("YYYY-MM-DD")]);
     }
   };
 

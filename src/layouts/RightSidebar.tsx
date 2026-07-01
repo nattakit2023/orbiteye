@@ -21,11 +21,11 @@ interface RightSidebarProps {
   error?: Error | null;
   onResultHover?: (result: {
     id: string;
-    coordinates?: [number, number] | [number, number][];
+    coordinates?: number[];
   } | null) => void;
   onResultClick?: (result: {
     id: string;
-    coordinates?: [number, number] | [number, number][];
+    coordinates?: number[];
   }) => void;
 }
 

@@ -22,8 +22,8 @@ import {
   ThunderboltOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
-import { useCart } from "@/context/CartContext";
-import { useOrder } from "@/context/OrderContext";
+import { useCart } from "@/context/CartContextValue";
+import { useOrder } from "@/context/OrderContextValue";
 
 const Cart: React.FC = () => {
   const { cartItems, removeFromCart, clearCart } = useCart();

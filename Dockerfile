@@ -20,7 +20,7 @@ WORKDIR /app
 # ใช้ `npm ci` แทน `npm install` เพื่อ build ที่ reproducible (ตาม package-lock.json)
 # ใส่ --include=dev เพราะ Vite/TypeScript อยู่ใน devDependencies
 COPY package*.json ./
-RUN npm ci --no-audit --no-fund --include=dev
+RUN npm install --no-audit --no-fund --include=dev
 
 # คัดลอก source แล้ว build (ใช้ NODE_ENV=production เฉพาะตอน build)
 COPY . .
