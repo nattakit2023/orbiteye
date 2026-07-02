@@ -13,11 +13,11 @@ interface ContentsProps {
   setRightSidebarCollapsed: (collapsed: boolean) => void;
   hoveredResult?: {
     id: string;
-    coordinates?: [number, number] | [number, number][];
+    coordinates?: number[];
   } | null;
   clickedResult?: {
     id: string;
-    coordinates?: [number, number] | [number, number][];
+    coordinates?: number[];
   } | null;
   apiResponse?: TransformedApiResponse | null;
   isFullWidth?: boolean;

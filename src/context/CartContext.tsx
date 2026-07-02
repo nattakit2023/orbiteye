@@ -1,41 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import { message } from "antd";
-import { useCartByUserId, useCreateCart, useAddCartItem, useRemoveCartItem, useUpdateCartItem } from "@/service/graphql/hooks/useCart";
-
-export interface CartItem {
-  id: string;
-  serverId?: number;
-  name: string;
-  satelliteName?: string;
-  date: number;
-  cloud: number;
-  quality: string;
-  imageUrl?: string;
-  price: number;
-  quantity: number;
-}
-
-interface CartContextType {
-  cartItems: CartItem[];
-  serverCartId: string | null;
-  addToCart: (item: Omit<CartItem, "id">) => void;
-  removeFromCart: (id: string) => void;
-  clearCart: () => void;
-  isInCart: (id: string) => boolean;
-  updateQuantity: (id: string, quantity: number) => void;
-  isLoading: boolean;
-  isSyncing: boolean;
-}
-
-const CartContext = createContext<CartContextType | undefined>(undefined);
-
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
-  }
-  return context;
-};
+import {
+  useCartByUserId,
+  useCreateCart,
+  useAddCartItem,
+  useRemoveCartItem,
+  useUpdateCartItem,
+} from "@/service/graphql/hooks/useCart";
+import { CartContext } from "./CartContextValue";
+import type { CartItem } from "./CartContextValue";
 
 interface CartProviderProps {
   children: ReactNode;
@@ -76,7 +49,6 @@ const getUserIdentifier = (): string => {
 export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: userIdProp }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [serverCartId, setServerCartId] = useState<string | null>(null);
 
   const effectiveUserId = userIdProp || getUserIdentifier();
   const isGuest = !userIdProp && effectiveUserId.startsWith("guest_");
@@ -87,26 +59,31 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
   const removeCartItemMutation = useRemoveCartItem();
   const updateCartItemMutation = useUpdateCartItem();
 
+  // Derived from serverCart - no state needed, eliminates cascading renders.
+  const serverCartId = serverCart?.id?.toString() ?? null;
+
+  // Effect intentionally re-syncs cartItems whenever the server query
+  // delivers fresh data (e.g. after a mutation invalidates the query).
   useEffect(() => {
     if (!serverCart) return;
-
-    const newServerCartId = serverCart.id?.toString() || null;
-    setServerCartId(newServerCartId);
 
     if (serverCart.items && Array.isArray(serverCart.items)) {
       const mappedItems: CartItem[] = serverCart.items.map((item) => ({
         // For server items, use database id as local id for consistency
-        id: item.id?.toString() || `${item.productName}`,
-        serverId: item.id,
-        name: item.productName || "Unknown Product",
-        satelliteName: item.satelliteName,
+        id: item.id?.toString() ?? `${item.productName}`,
+        serverId: item.id ?? undefined,
+        name: item.productName ?? "Unknown Product",
+        // GraphQL fields are Maybe<string> = string | null | undefined;
+        // CartItem uses string | undefined, so coerce null -> undefined.
+        satelliteName: item.satelliteName ?? undefined,
         date: Date.now(),
         cloud: 0,
         quality: "good",
-        imageUrl: item.imageUrl,
-        price: item.unitPrice || 0,
-        quantity: item.quantity || 1,
+        imageUrl: item.imageUrl ?? undefined,
+        price: item.unitPrice ?? 0,
+        quantity: item.quantity ?? 1,
       }));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCartItems(mappedItems);
     }
   }, [serverCart]);
@@ -119,8 +96,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
         const newCart = await createCartMutation.mutateAsync({
           userId: effectiveUserId,
         });
-        const newId = newCart.id?.toString() || "0";
-        setServerCartId(newId);
+        const newId = newCart.id?.toString() ?? "0";
         return newId;
       } catch (error) {
         console.error("Failed to create cart:", error);
@@ -183,9 +159,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
           // Only remove locally after backend succeeds
           setCartItems((prev) => prev.filter((item) => item.id !== id));
           message.success("Item removed from cart");
-        } catch (error: any) {
+        } catch (error: unknown) {
           // If item not found in backend, still remove locally (item may have been already deleted)
-          if (error?.message?.includes("not found") || error?.message?.includes("Cart item not found")) {
+          const messageText = error instanceof Error ? error.message : String(error);
+          if (messageText.includes("not found") || messageText.includes("Cart item not found")) {
             setCartItems((prev) => prev.filter((item) => item.id !== id));
             message.success("Item removed from cart");
           } else {
@@ -264,3 +241,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, userId: us
     </CartContext.Provider>
   );
 };
+
+// Re-export the type so existing `import type { CartItem } from "@/context/CartContext"`
+// paths keep working without forcing every caller to update.
+export type { CartItem } from "./CartContextValue";

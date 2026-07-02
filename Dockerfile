@@ -20,7 +20,7 @@ WORKDIR /app
 # ใช้ `npm ci` แทน `npm install` เพื่อ build ที่ reproducible (ตาม package-lock.json)
 # ใส่ --include=dev เพราะ Vite/TypeScript อยู่ใน devDependencies
 COPY package*.json ./
-RUN npm ci --no-audit --no-fund --include=dev
+RUN npm install --no-audit --no-fund --include=dev
 
 # คัดลอก source แล้ว build (ใช้ NODE_ENV=production เฉพาะตอน build)
 COPY . .
@@ -64,7 +64,7 @@ RUN chown -R nginx:nginx /usr/share/nginx/html && \
 # ใช้ non-root user เพื่อความปลอดภัย
 USER nginx
 
-EXPOSE 80
+EXPOSE 3000
 
 # Healthcheck เรียก /healthz ที่เราจะเพิ่มใน nginx.conf
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \

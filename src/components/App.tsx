@@ -15,7 +15,10 @@ import { analyzeShape, TransformedApiResponse } from "@/service/graphql/hooks/us
 interface ResultData {
   id: string;
   name?: string;
-  coordinates?: [number, number] | [number, number][];
+  // Flat number array to match AnalysisResult from useStac.ts and the
+  // SearchArch/RightSidebar prop types. The previous tuple type was a
+  // stale assumption that didn't match the data flowing through the app.
+  coordinates?: number[];
   timestamp?: number;
   imageData?: {
     thumbnailUrl?: string;
@@ -88,7 +91,6 @@ const App: React.FC = () => {
           type: customEvent.detail.type,
           coordinates: customEvent.detail.coordinates,
           radius: customEvent.detail.radius,
-          area: customEvent.detail.area,
         });
       };
 
