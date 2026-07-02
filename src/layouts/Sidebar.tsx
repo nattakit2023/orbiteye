@@ -18,7 +18,9 @@ import type { ApiRequest } from "@/types/api";
 interface ResultData {
   id: string;
   name?: string;
-  coordinates?: [number, number] | [number, number][];
+  // Accept both 1D (point/bbox) and 2D (polygon) to match
+  // the canonical ResultData in App.tsx and ArchiveResult in RightSidebar.
+  coordinates?: number[] | number[][];
   timestamp?: number;
 }
 

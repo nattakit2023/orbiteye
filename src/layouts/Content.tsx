@@ -13,11 +13,25 @@ interface ContentsProps {
   setRightSidebarCollapsed: (collapsed: boolean) => void;
   hoveredResult?: {
     id: string;
-    coordinates?: number[];
+    name?: string;
+    // Accept both 1D (point/bbox) and 2D (polygon) coordinates to match
+    // ResultData (App.tsx) and ArchiveResult (RightSidebar).
+    coordinates?: number[] | number[][];
+    timestamp?: number;
+    imageData?: {
+      thumbnailUrl?: string;
+      downloadUrl?: string;
+    };
   } | null;
   clickedResult?: {
     id: string;
-    coordinates?: number[];
+    name?: string;
+    coordinates?: number[] | number[][];
+    timestamp?: number;
+    imageData?: {
+      thumbnailUrl?: string;
+      downloadUrl?: string;
+    };
   } | null;
   apiResponse?: TransformedApiResponse | null;
   isFullWidth?: boolean;

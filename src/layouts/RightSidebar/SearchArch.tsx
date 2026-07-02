@@ -22,7 +22,8 @@ interface SearchArchProps {
     result: {
       id: string;
       name?: string;
-      coordinates?: number[];
+      // Accept both 1D (point/bbox) and 2D (polygon) to match ArchiveResult.
+      coordinates?: number[] | number[][];
       imageData?: {
         thumbnailUrl?: string;
         downloadUrl?: string;
@@ -32,7 +33,7 @@ interface SearchArchProps {
   onResultClick?: (result: {
     id: string;
     name?: string;
-    coordinates?: number[];
+    coordinates?: number[] | number[][];
     imageData?: {
       thumbnailUrl?: string;
       downloadUrl?: string;

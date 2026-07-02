@@ -15,10 +15,10 @@ import { analyzeShape, TransformedApiResponse } from "@/service/graphql/hooks/us
 interface ResultData {
   id: string;
   name?: string;
-  // Flat number array to match AnalysisResult from useStac.ts and the
-  // SearchArch/RightSidebar prop types. The previous tuple type was a
-  // stale assumption that didn't match the data flowing through the app.
-  coordinates?: number[];
+  // Accept both 1D (point/bbox) and 2D (polygon) coordinates to match
+  // ArchiveResult (RightSidebar). The runtime discriminator in
+  // MapComponent (`Array.isArray(result.coordinates[0])`) handles both.
+  coordinates?: number[] | number[][];
   timestamp?: number;
   imageData?: {
     thumbnailUrl?: string;
