@@ -138,15 +138,23 @@ const Login: React.FC = () => {
 
       const responseKey = mutation.toLowerCase();
       if (data.data?.[responseKey]?.token) {
-        localStorage.setItem("token", data.data[responseKey].token);
-        if (data.data[responseKey].user) {
-          localStorage.setItem(
-            "user",
-            JSON.stringify(data.data[responseKey].user),
-          );
-        }
-        message.success(`${isLoginMode ? "Login" : "Sign Up"} successful!`);
-        navigate("/dashboard");
+              localStorage.setItem("token", data.data[responseKey].token);
+              if (data.data[responseKey].user) {
+                const user = data.data[responseKey].user;
+                localStorage.setItem("user", JSON.stringify(user));
+                localStorage.setItem("isAdmin", user.isAdmin ? "true" : "false");
+
+                message.success(`${isLoginMode ? "Login" : "Sign Up"} successful!`);
+
+                // Admin → ไป admin portal, Customer → ไป dashboard
+                if (user.isAdmin) {
+                  navigate("/admin/dashboard");
+                } else {
+                  navigate("/dashboard");
+                }
+                return;
+              }
+              navigate("/dashboard");
       } else if (data.errors) {
         message.error(
           data.errors[0]?.message ||
